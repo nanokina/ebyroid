@@ -1,0 +1,20 @@
+{
+    "name": "hanako-experimental",
+    "version": "1.0.0",
+    "description": "えびえび",
+    "dependencies": {
+        "cmake-js": "^6.0.0",
+        "debug": "^4.1.1",
+        "iconv-lite": "^0.5.1",
+        "jschardet": "^2.1.1",
+        "wavefile": "^11.0.0"
+    },
+    "scripts": {
+        "install": "cmake-js compile"
+    },
+    "cmake-js": {
+        "runtime": "node",
+        "runtimeVersion": "13.8.0",
+        "arch": "ia32"
+    }
+}
