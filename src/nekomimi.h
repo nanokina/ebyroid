@@ -71,7 +71,7 @@ namespace Nekomimi {
             int32_t pauseMiddle;
             int32_t pauseLong;
             int32_t pauseSentence;
-            char* styleRate[MAX_VOICENAME_];
+            char styleRate[MAX_VOICENAME_];
         };
         TSpeakerParam speaker[1];
     };

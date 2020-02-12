@@ -40,7 +40,7 @@ async_work_on_execute(napi_env env, void* data) {
                 result = module->hanako->Hiragana(work->input, &out, &work->output_size);
                 work->output = out;
             } catch (std::exception &e) {
-                const char* m = "Hana::Hanako::Hiragana";
+                const char* m = "(Hana::Hanako::Hiragana)";
                 napi_fatal_error(m, strlen(m), e.what(), strlen(e.what()));
             }
             break;
@@ -50,7 +50,7 @@ async_work_on_execute(napi_env env, void* data) {
                 result = module->hanako->Speech(work->input, &out, &work->output_size);
                 work->output = out;
             } catch (std::exception &e) {
-                const char* m = "Hana::Hanako::Speech";
+                const char* m = "(Hana::Hanako::Speech)";
                 napi_fatal_error(m, strlen(m), e.what(), strlen(e.what()));
             }            
             break;
@@ -187,7 +187,7 @@ do_async_work(napi_env env, napi_callback_info info, work_type worktype) {
 }
 
 //
-// JS Signature: reinterpret(representatedTextBytes: Buffer, done: function(output16Bit44kPCM: Int16Array) -> none) -> none
+// JS Signature: speech(representatedTextBytes: Buffer, done: function(output16Bit44kPCM: Int16Array) -> none) -> none
 //
 static napi_value 
 export_func_speech(napi_env env, napi_callback_info info) {
@@ -237,7 +237,6 @@ export_func_init(napi_env env, napi_callback_info info) {
     char* install_dir_buffer = (char*) malloc(size + 1);
     status = napi_get_value_string_utf8(env, argv[0], install_dir_buffer, size + 1, NULL);
     en_assert(status == napi_ok);
-    puts(install_dir_buffer);
 
     // fetch necessary buffer size
     status = napi_get_value_string_utf8(env, argv[1], NULL, 0, &size);

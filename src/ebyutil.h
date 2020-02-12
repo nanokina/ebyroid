@@ -7,7 +7,7 @@
 # define en_assert(expr) assert(expr)
 #else
 # define e_assert(expr) do { if(!(expr)) { napi_throw_error(env, "EBY001", "assertion e_assert(" #expr ") failed."); return; }; } while(0)
-# define en_assert(expr) do { if(!(expr)) { napi_throw_error(env, "EBY001", "assertion e_assert(" #expr ") failed."); return NULL; }; } while(0)
+# define en_assert(expr) do { if(!(expr)) { napi_throw_error(env, "EBY001", "assertion en_assert(" #expr ") failed."); return NULL; }; } while(0)
 #endif
 
 #ifdef _DEBUG
