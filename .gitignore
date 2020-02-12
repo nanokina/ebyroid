@@ -1,3 +1,9 @@
+## Managed
+build/
+.vscode/
+
+## Auto generated
+
 # Logs
 logs
 *.log
@@ -33,9 +39,6 @@ bower_components
 
 # node-waf configuration
 .lock-wscript
-
-# Compiled binary addons (https://nodejs.org/api/addons.html)
-build/Release
 
 # Dependency directories
 node_modules/
