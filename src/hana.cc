@@ -94,7 +94,7 @@ namespace Hana {
         }
         param->extendFormat = Nekomimi::JeitaRuby;
         param->procTextBuf = HiraganaCallback;
-        param->procRawBuf = ProcRawBuf;
+        param->procRawBuf = SpeechCallback;
         param->procEventTts = ProcEventTTS;
         param->volume = volume;
         param->speaker[0].volume = 1.0;
@@ -234,7 +234,7 @@ namespace Hana {
         return 0;
     }
 
-    int __stdcall Hanako::ProcRawBuf(Nekomimi::EventReasonCode reasonCode, int32_t jobID, uint64_t tick, Nekomimi::IntPtr userData) {
+    int __stdcall Hanako::SpeechCallback(Nekomimi::EventReasonCode reasonCode, int32_t jobID, uint64_t tick, Nekomimi::IntPtr userData) {
         Response* const response = (Response*) userData;
 
         if (reasonCode != Nekomimi::RAWBUF_FULL && reasonCode != Nekomimi::RAWBUF_FLUSH && reasonCode != Nekomimi::RAWBUF_CLOSE) {

@@ -16,7 +16,7 @@ namespace Hana {
     private:
         Hanako() {}
         static int __stdcall HiraganaCallback(Nekomimi::EventReasonCode reasonCode, int32_t jobID, Nekomimi::IntPtr userData);
-        static int __stdcall ProcRawBuf(Nekomimi::EventReasonCode reasonCode, int32_t jobID, uint64_t tick, Nekomimi::IntPtr userData);
+        static int __stdcall SpeechCallback(Nekomimi::EventReasonCode reasonCode, int32_t jobID, uint64_t tick, Nekomimi::IntPtr userData);
         static int __stdcall ProcEventTTS(Nekomimi::EventReasonCode reasonCode, int32_t jobID, uint64_t tick, const char* name, Nekomimi::IntPtr userData);
 
         Nekomimi::APIAdapter* m_APIAdapter;
