@@ -46,12 +46,28 @@ class Semaphore {
 
 }
 
+class WaveObject {
+
+    /**
+     * @param {Int16Array} data 16bit PCM data
+     * @param {number} sampleRate sample-rate of the data (Hz)
+     */
+    constructor(data, sampleRate) {
+        this.data = data;
+        this.bitDepth = 16;
+        this.sampleRate = sampleRate;
+    }
+
+}
+
 // えびロイド
 class Ebyroid {
 
     static _ready = false;
 
     static _semaphore = new Semaphore(2); // ライブラリ内のキューが2つまでしかないので……
+
+    static _sampleRate;
 
     /**
      * ネイティブモジュールでライブラリの初期化を行います。
@@ -73,10 +89,14 @@ class Ebyroid {
         if (voice.endsWith('_22')) {
             const supports = ['kiritan', 'zunko'];
             if (supports.some((name) => voice.startsWith(name))) {
-                // pass
+                // VOICEROID+ confirmed
+                this._sampleRate = 22050;
             } else {
                 throw new Error('指定されたVOICEROID+ライブラリはサポートされていません。');
             }
+        } else {
+            // VOICEROID2 confirmed
+            this._sampleRate = 44100;
         }
 
         if (volume > 5.0 || volume < 0) {
@@ -90,7 +110,7 @@ class Ebyroid {
     /**
      * ネイティブモジュールで文章を読み上げます。
      * @param {string} text 読み上げる文章
-     * @return {Promise<Int16Array>} 16bit 44.1kHz PCM音声データ
+     * @return {Promise<WaveObject>} 波形データオブジェクト
      */
     static async speechText(text) {
 
@@ -106,7 +126,7 @@ class Ebyroid {
             ebyroid.reinterpret(buffer, (kanaOut) => {
                 ebyroid.speech(kanaOut, (pcmOut) => {
                     this._semaphore.release();
-                    resolve(pcmOut);
+                    resolve(new WaveObject(pcmOut, this._sampleRate));
                 });
             });
         });
@@ -143,7 +163,7 @@ class Ebyroid {
      * 通常は {@link Ebyroid.speechText} を使用して下さい。
      * 
      * @param {string} reinterpretedText VOICEROIDが解釈可能なテキスト
-     * @return {Promise<Int16Array>} 16bit 44.1kHz PCMデータ
+     * @return {Promise<WaveObject>} 波形データオブジェクト
      */
     static async speechReinterpretedText(reinterpretedText) {
         
@@ -158,7 +178,7 @@ class Ebyroid {
         return new Promise((resolve) => {
             ebyroid.speech(buffer, (pcmOut) => {
                 this._semaphore.release();
-                resolve(pcmOut);
+                resolve(new WaveObject(pcmOut, this._sampleRate));
             });
         });
     }

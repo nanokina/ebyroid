@@ -17,22 +17,23 @@ async function main() {
     
     let cnt = 200000;
     for (const _ of Array(100)) {
-        Ebyroid.speechReinterpretedText('アリガト').then((x) => console.log(`${++cnt}: ${x.length}`));
+        Ebyroid.speechReinterpretedText('アリガト').then((x) => console.log(`${++cnt}: ${x.data.length}`));
     }
     
     let c = 300000;
     for (const _ of Array(100)) {
         Ebyroid.speechText('ああああああああああああああああああああああああああああああああああああああああああ')
-            .then((x) => console.log(`${++c}: ${x.length}`));
+            .then((x) => console.log(`${++c}: ${x.data.length}`));
     }
 }
 
 main();
 
 setTimeout(async () => {
-    let pcmData = await Ebyroid.speechText('私がシュリンプちゃんです。またの名を海老といいます。伊勢海老じゃないよ');
+    let waveObject = await Ebyroid.speechText('私がシュリンプちゃんです。またの名を海老といいます。伊勢海老じゃないよ');
+    console.info(JSON.stringify(waveObject).slice(0, 1000));
     let wav = new WaveFile();
-    wav.fromScratch(1, 44100, '16', pcmData);
+    wav.fromScratch(1, waveObject.sampleRate, '16', waveObject.data);
     let oho = Math.random() * 100 | 0;
     fs.writeFileSync('TEST' + oho + '.wav', wav.toBuffer());
 }, 10000);
