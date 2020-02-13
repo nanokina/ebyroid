@@ -124,7 +124,6 @@ namespace Hana {
 
         char eventname[32];
         sprintf(eventname, "TTKLOCK:%p", response);
-        Dprintf("create eventname = %s", eventname);
 
         HANDLE event = CreateEventA(NULL, TRUE, FALSE, eventname);
 
@@ -138,8 +137,6 @@ namespace Hana {
         ResetEvent(event);
         CloseHandle(event);
         
-        Dprintf("terminate eventname = %s", eventname);
-
         // finalize
         if (ResultCode result = m_APIAdapter->CloseKana(jobID); result != Nekomimi::ERR_SUCCESS) {
             delete response;
@@ -185,8 +182,6 @@ namespace Hana {
 
             char eventname[32];
             sprintf(eventname, "TTKLOCK:%p", response);
-            Dprintf("open eventname = %s", eventname);
-
             HANDLE event = OpenEventA(EVENT_ALL_ACCESS, FALSE, eventname);
             SetEvent(event);
         }
@@ -202,8 +197,6 @@ namespace Hana {
 
         char eventname[32];
         sprintf(eventname, "TTSLOCK:%p", response);
-        Dprintf("create eventname = %s", eventname);
-
         HANDLE event = CreateEventA(NULL, TRUE, FALSE, eventname);
 
         int32_t jobID;
@@ -216,8 +209,6 @@ namespace Hana {
         ResetEvent(event);
         CloseHandle(event);
         
-        Dprintf("terminate eventname = %s", eventname);
-
         // finalize
         if (ResultCode result = m_APIAdapter->CloseSpeech(jobID); result != Nekomimi::ERR_SUCCESS) {
             delete response;
@@ -263,8 +254,6 @@ namespace Hana {
 
             char eventname[32];
             sprintf(eventname, "TTSLOCK:%p", response);
-            Dprintf("open eventname = %s", eventname);
-
             HANDLE event = OpenEventA(EVENT_ALL_ACCESS, FALSE, eventname);
             SetEvent(event);
         }

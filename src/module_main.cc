@@ -101,7 +101,6 @@ async_work_on_complete(napi_env env, napi_status work_status, void* data) {
 
     // actually call the javascript callback function
     status = napi_call_function(env, undefined, callback, 1, retval, NULL);
-    Dprintf("napi_call_function status = %d", status);
     e_assert(status == napi_ok || status == napi_pending_exception);
 
     // decrement the reference count of the callback function ... means it will be GC'd
