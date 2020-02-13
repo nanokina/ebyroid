@@ -273,10 +273,10 @@ namespace Hana {
     }
 
     vector<unsigned char> Response::End() {
-        return m_Buffer;
+        return std::move(m_Buffer);
     }
 
     vector<int16_t> Response::End16() {
-        return m_Buffer16;
+        return std::move(m_Buffer16);
     }
 }
