@@ -3,9 +3,10 @@
 
 #include <Windows.h>
 
+#include "nekomimi.h"
 #include "nekobuilder.h"
-#include "hana.h"
 #include "ebyutil.h"
+#include "hana.h"
 
 namespace Hana {
 

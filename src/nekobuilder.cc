@@ -1,7 +1,7 @@
 #include <stdexcept>
 
-#include "nekobuilder.h"
 #include "ebyutil.h"
+#include "nekobuilder.h"
 
 namespace Nekomimi {
 

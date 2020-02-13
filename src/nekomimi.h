@@ -12,6 +12,7 @@ namespace Nekomimi {
     
     static const int32_t MAX_VOICENAME_ = 80;
     static const int32_t CONTROL_LENGTH_ = 12;
+    static const int32_t CONFIG_RAWBUF_SIZE_ = 0x158880;
 
     enum EventReasonCode {
         TEXTBUF_FULL = 0x00000065,
