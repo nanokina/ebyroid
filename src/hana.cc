@@ -3,6 +3,7 @@
 
 #include <Windows.h>
 
+#include "nekobuilder.h"
 #include "hana.h"
 #include "ebyutil.h"
 
@@ -12,23 +13,21 @@ namespace Hana {
     using Nekomimi::ResultCode;
 
     Hanako* Hanako::Create(string pathToWorkingDir, string voice, float volume) {
-        string pathToLibrary = pathToWorkingDir + "\\aitalked.dll";
-        string pathToLicense = pathToWorkingDir + "\\aitalk.lic";
-        string pathToVoiceDir = pathToWorkingDir + "\\Voice";
-        string pathToLanguageDir = pathToWorkingDir + "\\Lang\\standard";
+        Nekomimi::SettingBuilder builder(pathToWorkingDir, voice);
+        Nekomimi::Setting setting = builder.Build();
 
-        Nekomimi::APIAdapter* adapter = Nekomimi::APIAdapter::Create(pathToLibrary.c_str());
+        Nekomimi::APIAdapter* adapter = Nekomimi::APIAdapter::Create(setting.dllPath);
         if (adapter == nullptr) {
-            throw std::runtime_error(string("Could not open the library file.\n\tGiven Path: ") + pathToLibrary);
+            throw std::runtime_error(string("Could not open the library file.\n\tGiven Path: ") + setting.dllPath);
         }
 
         Nekomimi::TConfig config;
-        config.hzVoiceDB = 44100;
+        config.hzVoiceDB = setting.frequency;
         config.msecTimeout = 1000;
-        config.pathLicense = pathToLicense.c_str();
-        config.codeAuthSeed = EBY_SEED;
-        config.dirVoiceDBS = pathToVoiceDir.c_str();
-        config.__reserved__ = 0;
+        config.pathLicense = setting.licensePath;
+        config.dirVoiceDBS = setting.voiceDir;
+        config.codeAuthSeed = setting.seed;
+        config.lenAuthSeed = Nekomimi::LEN_SEED_VALUE_;
 
         if (ResultCode result = adapter->Init(&config); result != ResultCode::ERR_SUCCESS) {
             delete adapter;
@@ -44,13 +43,13 @@ namespace Hana {
             errorMessage += std::to_string(GetLastError());
             throw std::runtime_error(errorMessage);
         }
-        if (BOOL result = SetCurrentDirectoryA(pathToWorkingDir.c_str()); !result) {
+        if (BOOL result = SetCurrentDirectoryA(setting.baseDir); !result) {
             delete adapter;
             string errorMessage = "Could not change working directory properly. GetLastError() = ";
             errorMessage += std::to_string(GetLastError());
             throw std::runtime_error(errorMessage);
         }
-        if (ResultCode result = adapter->LangLoad(pathToLanguageDir.c_str()); result != ResultCode::ERR_SUCCESS) {
+        if (ResultCode result = adapter->LangLoad(setting.languageDir); result != ResultCode::ERR_SUCCESS) {
             delete adapter;
             string errorMessage = "API Load Language failed (Could not load language file) with code ";
             errorMessage += std::to_string(result);
@@ -63,7 +62,7 @@ namespace Hana {
             throw std::runtime_error(errorMessage);
         }
 
-        if (ResultCode result = adapter->VoiceLoad(voice.c_str()); result != ResultCode::ERR_SUCCESS) {
+        if (ResultCode result = adapter->VoiceLoad(setting.voiceName); result != ResultCode::ERR_SUCCESS) {
             delete adapter;
             string errorMessage = "API Load Voice failed (Could not load voice data) with code ";
             errorMessage += std::to_string(result);
@@ -96,6 +95,7 @@ namespace Hana {
         param->procTextBuf = HiraganaCallback;
         param->procRawBuf = SpeechCallback;
         param->procEventTts = ProcEventTTS;
+        param->lenRawBufBytes = Nekomimi::CONFIG_RAWBUF_SIZE_;
         param->volume = volume;
         param->speaker[0].volume = 1.0;
 
@@ -242,7 +242,7 @@ namespace Hana {
             return 0;
         }
 
-        static const int BUFFER_LENGTH = 1024 * 32;
+        static const int BUFFER_LENGTH = 0xFFFF;
         int16_t* memory = new int16_t[BUFFER_LENGTH];
         while (true) {
             uint32_t size, pos;

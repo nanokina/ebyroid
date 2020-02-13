@@ -10,6 +10,9 @@ typedef HINSTANCE__ *HINSTANCE;
 
 namespace Nekomimi {
     
+    static const int32_t MAX_VOICENAME_ = 80;
+    static const int32_t CONTROL_LENGTH_ = 12;
+
     enum EventReasonCode {
         TEXTBUF_FULL = 0x00000065,
         TEXTBUF_FLUSH = 0x00000066,
@@ -26,82 +29,16 @@ namespace Nekomimi {
         None = 0,
         JeitaRuby = 1,
         AutoBookmark = 16,
-        All = JeitaRuby | AutoBookmark
+        Both = JeitaRuby | AutoBookmark
     };
 
-    typedef void * IntPtr;
-    typedef int (__stdcall *ProcTextBuf)(EventReasonCode reasonCode, int32_t jobID, IntPtr userData);
-    typedef int (__stdcall *ProcRawBuf)(EventReasonCode reasonCode, int32_t jobID, uint64_t tick, IntPtr userData);
-    typedef int (__stdcall *ProcEventTTS)(EventReasonCode reasonCode, int32_t jobID, uint64_t tick, const char* name, IntPtr userData);
-
-    #pragma pack(push, 1)
-    struct TTtsParam {
-        static const int32_t MAX_VOICENAME_ = 80;
-        uint32_t size;
-        ProcTextBuf procTextBuf;
-        ProcRawBuf procRawBuf;
-        ProcEventTTS procEventTts;
-        uint32_t lenTextBufBytes;
-        uint32_t lenRawBufBytes;
-        float volume;
-        int32_t pauseBegin;
-        int32_t pauseTerm;
-        ExtendFormat extendFormat;
-        char voiceName[MAX_VOICENAME_];
-        
-        struct TJeitaParam {
-            static const int32_t controlLength = 12;
-            char femaleName[MAX_VOICENAME_];
-            char maleName[MAX_VOICENAME_];
-            int32_t pauseMiddle;
-            int32_t pauseLong;
-            int32_t pauseSentence;
-            char control[controlLength];
-        } Jeita;
-
-        uint32_t numSpeakers;
-        int32_t __reserved__;
-        
-        struct TSpeakerParam {
-            char voiceName[MAX_VOICENAME_];
-            float volume;
-            float speed;
-            float pitch;
-            float range;
-            int32_t pauseMiddle;
-            int32_t pauseLong;
-            int32_t pauseSentence;
-            char styleRate[MAX_VOICENAME_];
-        };
-        TSpeakerParam speaker[1];
-    };
-    #pragma pack(pop) 
-
-    enum JobInOut {
+    enum JobInOut : uint32_t {
         IOMODE_PLAIN_TO_WAVE = 11,
         IOMODE_AIKANA_TO_WAVE = 12,
         IOMODE_JEITA_TO_WAVE = 13,
         IOMODE_PLAIN_TO_AIKANA = 21,
         IOMODE_AIKANA_TO_JEITA = 32
     };
-
-    #pragma pack(push, 1)
-    struct TJobParam {
-        JobInOut modeInOut;
-        IntPtr userData;
-    };
-    #pragma pack(pop)
-
-    #pragma pack(push, 1)
-    struct TConfig {
-        uint32_t hzVoiceDB;
-        const char* dirVoiceDBS;
-        uint32_t msecTimeout;
-        const char* pathLicense;
-        const char* codeAuthSeed;
-        uint32_t __reserved__; 
-    };
-    #pragma pack(pop)
 
     enum ResultCode {
         ERR_USERDIC_NOENTRY = -1012,
@@ -124,7 +61,7 @@ namespace Nekomimi {
         ERR_INVALID_ARGUMENT = -3,
         ERR_UNSUPPORTED = -2,
         ERR_INTERNAL_ERROR = -1,
-        ERR_SUCCESS = 0, // ERR_SUCCESS ... ねこにはありえないセンス
+        ERR_SUCCESS = 0,
         ERR_ALREADY_INITIALIZED = 10,
         ERR_ALREADY_LOADED = 11,
         ERR_PARTIALLY_REGISTERED = 21,
@@ -137,6 +74,68 @@ namespace Nekomimi {
         STAT_STILL_RUNNING = 11,
         STAT_DONE = 12
     };
+
+    typedef void * IntPtr;
+    typedef int (__stdcall *ProcTextBuf)(EventReasonCode reasonCode, int32_t jobID, IntPtr userData);
+    typedef int (__stdcall *ProcRawBuf)(EventReasonCode reasonCode, int32_t jobID, uint64_t tick, IntPtr userData);
+    typedef int (__stdcall *ProcEventTTS)(EventReasonCode reasonCode, int32_t jobID, uint64_t tick, const char* name, IntPtr userData);
+
+    #pragma pack(push, 1)
+    struct TTtsParam {
+        uint32_t size;
+        ProcTextBuf procTextBuf;
+        ProcRawBuf procRawBuf;
+        ProcEventTTS procEventTts;
+        uint32_t lenTextBufBytes;
+        uint32_t lenRawBufBytes;
+        float volume;
+        int32_t pauseBegin;
+        int32_t pauseTerm;
+        ExtendFormat extendFormat;
+        char voiceName[MAX_VOICENAME_];
+        struct TJeitaParam {
+            char femaleName[MAX_VOICENAME_];
+            char maleName[MAX_VOICENAME_];
+            int32_t pauseMiddle;
+            int32_t pauseLong;
+            int32_t pauseSentence;
+            char control[CONTROL_LENGTH_];
+        };
+        TJeitaParam jeita;
+        uint32_t numSpeakers;
+        int32_t __reserved__;
+        struct TSpeakerParam {
+            char voiceName[MAX_VOICENAME_];
+            float volume;
+            float speed;
+            float pitch;
+            float range;
+            int32_t pauseMiddle;
+            int32_t pauseLong;
+            int32_t pauseSentence;
+            char styleRate[MAX_VOICENAME_];
+        };
+        TSpeakerParam speaker[1];
+    };
+    #pragma pack(pop) 
+
+    #pragma pack(push, 1)
+    struct TJobParam {
+        JobInOut modeInOut;
+        IntPtr userData;
+    };
+    #pragma pack(pop)
+
+    #pragma pack(push, 1)
+    struct TConfig {
+        uint32_t hzVoiceDB;
+        const char* dirVoiceDBS;
+        uint32_t msecTimeout;
+        const char* pathLicense;
+        const char* codeAuthSeed;
+        uint32_t lenAuthSeed; 
+    };
+    #pragma pack(pop)
 
     class APIAdapter {
 

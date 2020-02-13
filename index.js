@@ -2,7 +2,7 @@ const WaveFile = require('wavefile').WaveFile;
 const fs = require('fs');
 const { Ebyroid } = require('./ebyroid');
 
-Ebyroid.init();
+Ebyroid.init('C:\\Program Files (x86)\\AHS\\VOICEROID+\\KiritanEX', 'kiritan_22');
 
 async function main() {
 

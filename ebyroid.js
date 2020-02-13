@@ -71,7 +71,12 @@ class Ebyroid {
         }
 
         if (voice.endsWith('_22')) {
-            throw new Error('旧版のライブラリは利用できません。');
+            const supports = ['kiritan', 'zunko'];
+            if (supports.some((name) => voice.startsWith(name))) {
+                // pass
+            } else {
+                throw new Error('指定されたVOICEROID+ライブラリはサポートされていません。');
+            }
         }
 
         if (volume > 5.0 || volume < 0) {
