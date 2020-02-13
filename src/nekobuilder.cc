@@ -30,6 +30,10 @@ namespace Nekomimi {
                 setting.seed = EBY_SEED_B;
             } else if (voiceName == "zunko_22") {
                 setting.seed = EBY_SEED_C;
+            } else if (voiceName == "akane_22") {
+                setting.seed = EBY_SEED_D;
+            } else if (voiceName == "aoi_22") {
+                setting.seed = EBY_SEED_E;
             } else {
                 char message[64];
                 sprintf(message, "Unsupported VOICEROID+ library '%s' was given.", setting.voiceName);
@@ -46,6 +50,8 @@ namespace Nekomimi {
             std::strcpy(setting.languageDir, languageDir.c_str());
             setting.seed = EBY_SEED_A;
         }
+
+        Dprintf("%d \n %s \n %s \n", setting.frequency, setting.languageDir, setting.voiceDir);
 
         return std::move(setting);
     }

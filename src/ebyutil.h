@@ -21,5 +21,7 @@
 #define EBY_SEED_A _____applepie(R, 2, p, b, H, J, I, W, A, O, C, X, a, 6, D, l, K, D, U, A)
 #define EBY_SEED_B _____applepie(b, R, Q, 6, 1, D, e, Y, 7, q, 1, I, E, A, T, 4, Q, q, P, a)
 #define EBY_SEED_C _____applepie(q, M, t, d, C, N, e, l, 8, N, 1, K, C, 4, m, U, O, 2, u, p)
+#define EBY_SEED_D _____applepie(2, Y, Z, 0, c, w, 2, N, 1, b, 7, 4, b, D, T, M, K, 8, 1, 5)
+#define EBY_SEED_E _____applepie(D, j, Y, l, J, 1, Z, 5, g, L, 7, h, C, E, X, m, V, 7, S, g)
 
 #endif /* EBYUTIL_H */

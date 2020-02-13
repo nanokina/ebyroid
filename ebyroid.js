@@ -87,7 +87,7 @@ class Ebyroid {
         }
 
         if (voice.endsWith('_22')) {
-            const supports = ['kiritan', 'zunko'];
+            const supports = ['kiritan', 'zunko', 'akane', 'aoi'];
             if (supports.some((name) => voice.startsWith(name))) {
                 // VOICEROID+ confirmed
                 this._sampleRate = 22050;
