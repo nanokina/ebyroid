@@ -24,4 +24,4 @@
 #define EBY_SEED_D _____applepie(2, Y, Z, 0, c, w, 2, N, 1, b, 7, 4, b, D, T, M, K, 8, 1, 5)
 #define EBY_SEED_E _____applepie(D, j, Y, l, J, 1, Z, 5, g, L, 7, h, C, E, X, m, V, 7, S, g)
 
-#endif /* EBYUTIL_H */
+#endif // EBYUTIL_H
