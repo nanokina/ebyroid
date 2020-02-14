@@ -1,7 +1,7 @@
 {
-    "name": "hanako-experimental",
+    "name": "ebyroid",
     "version": "1.0.0",
-    "description": "えびえび",
+    "description": "Node native addon for VOICEROID+ and VOICEROID2",
     "dependencies": {
         "cmake-js": "^6.0.0",
         "debug": "^4.1.1",
