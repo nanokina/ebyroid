@@ -1,3 +1,5 @@
+#include "hana.h"
+
 #include <string>
 #include <stdexcept>
 
@@ -6,7 +8,6 @@
 #include "nekomimi.h"
 #include "nekobuilder.h"
 #include "ebyutil.h"
-#include "hana.h"
 
 namespace Hana {
 

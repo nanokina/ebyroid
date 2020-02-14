@@ -1,8 +1,8 @@
+#include "nekomimi.h"
+
 #include <stdexcept>
 
 #include <Windows.h>
-
-#include "nekomimi.h"
 
 namespace Nekomimi {
 
