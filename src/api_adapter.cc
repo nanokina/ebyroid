@@ -6,6 +6,22 @@
 
 namespace ebyroid {
 
+namespace {
+
+template <class T>
+inline T LoadProc(const HINSTANCE& handle, const char* proc_name) {
+  FARPROC proc = GetProcAddress(handle, proc_name);
+  if (proc == nullptr) {
+    FreeLibrary(handle);
+    char m[64];
+    std::snprintf(m, 64, "Could not find '%s' in the library.", proc_name);
+    throw std::runtime_error(m);
+  }
+  return reinterpret_cast<T>(proc);
+}
+
+}  // namespace
+
 ApiAdapter* ApiAdapter::Create(const char* dll_path) {
   HINSTANCE handle = LoadLibraryA(dll_path);
   if (handle == nullptr) {
@@ -13,83 +29,19 @@ ApiAdapter* ApiAdapter::Create(const char* dll_path) {
   }
 
   ApiAdapter* adapter = new ApiAdapter;
-  adapter->init_ = (ApiInit) GetProcAddress(handle, "_AITalkAPI_Init@4");
-  if (adapter->init_ == nullptr) {
-    FreeLibrary(handle);
-    throw std::runtime_error("Could not find AITalkAPI_Init in the library.");
-  }
-
-  adapter->end_ = (ApiEnd) GetProcAddress(handle, "_AITalkAPI_End@0");
-  if (adapter->end_ == nullptr) {
-    FreeLibrary(handle);
-    throw std::runtime_error("Could not find AITalkAPI_End in the library.");
-  }
-
-  adapter->voice_load_ = (ApiVoiceLoad) GetProcAddress(handle, "_AITalkAPI_VoiceLoad@4");
-  if (adapter->voice_load_ == nullptr) {
-    FreeLibrary(handle);
-    throw std::runtime_error("Could not find AITalkAPI_VoiceLoad in the library.");
-  }
-
-  adapter->voice_clear_ = (ApiVoiceClear) GetProcAddress(handle, "_AITalkAPI_VoiceClear@0");
-  if (adapter->voice_clear_ == nullptr) {
-    FreeLibrary(handle);
-    throw std::runtime_error("Could not find AITalkAPI_VoiceClear in the library.");
-  }
-
-  adapter->set_param_ = (ApiSetParam) GetProcAddress(handle, "_AITalkAPI_SetParam@4");
-  if (adapter->set_param_ == nullptr) {
-    FreeLibrary(handle);
-    throw std::runtime_error("Could not find AITalkAPI_SetParam in the library.");
-  }
-
-  adapter->get_param_ = (ApiGetParam) GetProcAddress(handle, "_AITalkAPI_GetParam@8");
-  if (adapter->get_param_ == nullptr) {
-    FreeLibrary(handle);
-    throw std::runtime_error("Could not find AITalkAPI_GetParam in the library.");
-  }
-
-  adapter->lang_load_ = (ApiLangLoad) GetProcAddress(handle, "_AITalkAPI_LangLoad@4");
-  if (adapter->lang_load_ == nullptr) {
-    FreeLibrary(handle);
-    throw std::runtime_error("Could not find AITalkAPI_LangLoad in the library.");
-  }
-
-  adapter->text_to_kana_ = (ApiTextToKana) GetProcAddress(handle, "_AITalkAPI_TextToKana@12");
-  if (adapter->text_to_kana_ == nullptr) {
-    FreeLibrary(handle);
-    throw std::runtime_error("Could not find AITalkAPI_TextToKana in the library.");
-  }
-
-  adapter->close_kana_ = (ApiCloseKana) GetProcAddress(handle, "_AITalkAPI_CloseKana@8");
-  if (adapter->close_kana_ == nullptr) {
-    FreeLibrary(handle);
-    throw std::runtime_error("Could not find AITalkAPI_CloseKana in the library.");
-  }
-
-  adapter->get_kana_ = (ApiGetKana) GetProcAddress(handle, "_AITalkAPI_GetKana@20");
-  if (adapter->get_kana_ == nullptr) {
-    FreeLibrary(handle);
-    throw std::runtime_error("Could not find AITalkAPI_GetKana in the library.");
-  }
-
-  adapter->text_to_speech_ = (ApiTextToSpeech) GetProcAddress(handle, "_AITalkAPI_TextToSpeech@12");
-  if (adapter->text_to_speech_ == nullptr) {
-    FreeLibrary(handle);
-    throw std::runtime_error("Could not find AITalkAPI_TextToSpeech in the library.");
-  }
-
-  adapter->close_speech_ = (ApiCloseSpeech) GetProcAddress(handle, "_AITalkAPI_CloseSpeech@8");
-  if (adapter->close_speech_ == nullptr) {
-    FreeLibrary(handle);
-    throw std::runtime_error("Could not find AITalkAPI_CloseSpeech in the library.");
-  }
-
-  adapter->get_data_ = (ApiGetData) GetProcAddress(handle, "_AITalkAPI_GetData@16");
-  if (adapter->get_data_ == nullptr) {
-    FreeLibrary(handle);
-    throw std::runtime_error("Could not find AITalkAPI_GetData in the library.");
-  }
+  adapter->init_ = LoadProc<ApiInit>(handle, "_AITalkAPI_Init@4");
+  adapter->end_ = LoadProc<ApiEnd>(handle, "_AITalkAPI_End@0");
+  adapter->voice_load_ = LoadProc<ApiVoiceLoad>(handle, "_AITalkAPI_VoiceLoad@4");
+  adapter->voice_clear_ = LoadProc<ApiVoiceClear>(handle, "_AITalkAPI_VoiceClear@0");
+  adapter->set_param_ = LoadProc<ApiSetParam>(handle, "_AITalkAPI_SetParam@4");
+  adapter->get_param_ = LoadProc<ApiGetParam>(handle, "_AITalkAPI_GetParam@8");
+  adapter->lang_load_ = LoadProc<ApiLangLoad>(handle, "_AITalkAPI_LangLoad@4");
+  adapter->text_to_kana_ = LoadProc<ApiTextToKana>(handle, "_AITalkAPI_TextToKana@12");
+  adapter->close_kana_ = LoadProc<ApiCloseKana>(handle, "_AITalkAPI_CloseKana@8");
+  adapter->get_kana_ = LoadProc<ApiGetKana>(handle, "_AITalkAPI_GetKana@20");
+  adapter->text_to_speech_ = LoadProc<ApiTextToSpeech>(handle, "_AITalkAPI_TextToSpeech@12");
+  adapter->close_speech_ = LoadProc<ApiCloseSpeech>(handle, "_AITalkAPI_CloseSpeech@8");
+  adapter->get_data_ = LoadProc<ApiGetData>(handle, "_AITalkAPI_GetData@16");
 
   adapter->dll_instance_ = handle;
   return adapter;
