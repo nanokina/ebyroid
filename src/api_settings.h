@@ -28,13 +28,13 @@ struct Settings {
 class SettingsBuilder {
  public:
   SettingsBuilder(const std::string& base_dir, const std::string& voice_name)
-      : base_dir(base_dir), voice_name(voice_name) {}
+      : base_dir_(base_dir), voice_name_(voice_name) {}
 
   Settings Build();
 
  private:
-  std::string base_dir;
-  std::string voice_name;
+  std::string base_dir_;
+  std::string voice_name_;
 };
 
 }  // namespace ebyroid
