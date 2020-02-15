@@ -16,27 +16,27 @@ static const char* LIC_FILENAME_ = "aitalk.lic";
 static const char* WIN_DELIMIT_ = "\\";
 
 struct Setting {
-    char baseDir[MAX_PATH_SIZE];
-    char dllPath[MAX_PATH_SIZE];
-    char voiceDir[MAX_PATH_SIZE];
-    char voiceName[16];
-    char languageDir[MAX_PATH_SIZE];
-    char licensePath[MAX_PATH_SIZE];
-    const char *seed;
-    uint32_t frequency;
+  char baseDir[MAX_PATH_SIZE];
+  char dllPath[MAX_PATH_SIZE];
+  char voiceDir[MAX_PATH_SIZE];
+  char voiceName[16];
+  char languageDir[MAX_PATH_SIZE];
+  char licensePath[MAX_PATH_SIZE];
+  const char* seed;
+  uint32_t frequency;
 };
 
 class SettingBuilder {
-    std::string baseDir;
-    std::string voiceName;
-    
-public:
-    SettingBuilder(std::string baseDir, std::string voiceName):
-        baseDir(baseDir), voiceName(voiceName) {}
-    
-    Setting Build();
+  std::string baseDir;
+  std::string voiceName;
+
+ public:
+  SettingBuilder(std::string baseDir, std::string voiceName)
+      : baseDir(baseDir), voiceName(voiceName) {}
+
+  Setting Build();
 };
 
-} // namespace nekomimi
+}  // namespace Nekomimi
 
-#endif // NEKOBUILDER_H
+#endif  // NEKOBUILDER_H
