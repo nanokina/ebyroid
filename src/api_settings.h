@@ -10,7 +10,6 @@ namespace ebyroid {
 static constexpr size_t kMaxPathSize = 0xFF;
 static constexpr int32_t kFrequency44 = 0xAC44;
 static constexpr int32_t kFrequency22 = 0x5622;
-static constexpr int32_t kLenSeedValue = 0;
 static constexpr char* kDllFilename = "aitalked.dll";
 static constexpr char* kLicFilename = "aitalk.lic";
 static constexpr char* kWinDelimit = "\\";

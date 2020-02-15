@@ -20,6 +20,9 @@ static constexpr int32_t kControlLength = 12;
 // fixed value from debugger
 static constexpr int32_t kConfigRawbufSize = 0x158880;
 
+// fixed value from debugger
+static constexpr int32_t kLenSeedValue = 0;
+
 //
 // following variable names and values are according to
 // the names and values that is revealed by debugger

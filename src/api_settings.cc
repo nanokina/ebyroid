@@ -46,7 +46,7 @@ Settings SettingsBuilder::Build() {
     }
   } else {
     // this means it is either VOICEROID2 or an unexpected library
-    // try to setup as VOCAROID2 anyways
+    // try to setup as VOICEROID2 anyways
     settings.frequency = kFrequency44;
 
     string voice_dir = base_dir + kWinDelimit + "Voice";
