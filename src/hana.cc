@@ -9,28 +9,27 @@
 #include "nekobuilder.h"
 #include "nekomimi.h"
 
-namespace Hana {
+namespace ebyroid {
 
-using Nekomimi::ResultCode;
 using std::string, std::vector;
 
 Hanako* Hanako::Create(string pathToWorkingDir, string voice, float volume) {
-  Nekomimi::SettingBuilder builder(pathToWorkingDir, voice);
-  Nekomimi::Setting setting = builder.Build();
+  SettingBuilder builder(pathToWorkingDir, voice);
+  Setting setting = builder.Build();
 
-  Nekomimi::APIAdapter* adapter = Nekomimi::APIAdapter::Create(setting.dllPath);
+  APIAdapter* adapter = APIAdapter::Create(setting.dllPath);
   if (adapter == nullptr) {
     throw std::runtime_error(string("Could not open the library file.\n\tGiven Path: ") +
                              setting.dllPath);
   }
 
-  Nekomimi::TConfig config;
+  TConfig config;
   config.hzVoiceDB = setting.frequency;
   config.msecTimeout = 1000;
   config.pathLicense = setting.licensePath;
   config.dirVoiceDBS = setting.voiceDir;
   config.codeAuthSeed = setting.seed;
-  config.lenAuthSeed = Nekomimi::LEN_SEED_VALUE_;
+  config.lenAuthSeed = LEN_SEED_VALUE_;
 
   if (ResultCode result = adapter->Init(&config); result != ResultCode::ERR_SUCCESS) {
     delete adapter;
@@ -87,7 +86,7 @@ Hanako* Hanako::Create(string pathToWorkingDir, string voice, float volume) {
   // assert(paramSize == sizeof(Nekomimi::TTtsParam));
 
   char* allocatedMemory = new char[paramSize];
-  Nekomimi::TTtsParam* param = (Nekomimi::TTtsParam*) allocatedMemory;
+  TTtsParam* param = (TTtsParam*) allocatedMemory;
   param->size = paramSize;
   if (ResultCode result = adapter->GetParam(param, &paramSize); result != ResultCode::ERR_SUCCESS) {
     delete[] allocatedMemory;
@@ -96,11 +95,11 @@ Hanako* Hanako::Create(string pathToWorkingDir, string voice, float volume) {
     errorMessage += std::to_string(result);
     throw std::runtime_error(errorMessage);
   }
-  param->extendFormat = Nekomimi::JeitaRuby;
+  param->extendFormat = JeitaRuby;
   param->procTextBuf = HiraganaCallback;
   param->procRawBuf = SpeechCallback;
   param->procEventTts = ProcEventTTS;
-  param->lenRawBufBytes = Nekomimi::CONFIG_RAWBUF_SIZE_;
+  param->lenRawBufBytes = CONFIG_RAWBUF_SIZE_;
   param->volume = volume;
   param->speaker[0].volume = 1.0;
 
@@ -122,8 +121,8 @@ Hanako* Hanako::Create(string pathToWorkingDir, string voice, float volume) {
 int Hanako::Hiragana(const unsigned char* inbytes, unsigned char** outbytes, size_t* outsize) {
   Response* const response = new Response(this);
 
-  Nekomimi::TJobParam param;
-  param.modeInOut = Nekomimi::JobInOut::IOMODE_PLAIN_TO_AIKANA;
+  TJobParam param;
+  param.modeInOut = JobInOut::IOMODE_PLAIN_TO_AIKANA;
   param.userData = response;
 
   char eventname[32];
@@ -133,7 +132,7 @@ int Hanako::Hiragana(const unsigned char* inbytes, unsigned char** outbytes, siz
 
   int32_t jobID;
   if (ResultCode result = m_APIAdapter->TextToKana(&jobID, &param, (const char*) inbytes);
-      result != Nekomimi::ERR_SUCCESS) {
+      result != ERR_SUCCESS) {
     delete response;
     throw std::runtime_error(string("TextToKana failed with result code ") +
                              std::to_string(result));
@@ -144,7 +143,7 @@ int Hanako::Hiragana(const unsigned char* inbytes, unsigned char** outbytes, siz
   CloseHandle(event);
 
   // finalize
-  if (ResultCode result = m_APIAdapter->CloseKana(jobID); result != Nekomimi::ERR_SUCCESS) {
+  if (ResultCode result = m_APIAdapter->CloseKana(jobID); result != ERR_SUCCESS) {
     delete response;
     throw std::runtime_error("wtf");
   }
@@ -160,13 +159,10 @@ int Hanako::Hiragana(const unsigned char* inbytes, unsigned char** outbytes, siz
   return 0;
 }
 
-int __stdcall Hanako::HiraganaCallback(Nekomimi::EventReasonCode reasonCode,
-                                       int32_t jobID,
-                                       Nekomimi::IntPtr userData) {
+int __stdcall Hanako::HiraganaCallback(EventReasonCode reasonCode, int32_t jobID, IntPtr userData) {
   Response* const response = (Response*) userData;
 
-  if (reasonCode != Nekomimi::TEXTBUF_FULL && reasonCode != Nekomimi::TEXTBUF_FLUSH &&
-      reasonCode != Nekomimi::TEXTBUF_CLOSE) {
+  if (reasonCode != TEXTBUF_FULL && reasonCode != TEXTBUF_FLUSH && reasonCode != TEXTBUF_CLOSE) {
     // unexpected: may possibly lead to memory leak
     return 0;
   }
@@ -177,7 +173,7 @@ int __stdcall Hanako::HiraganaCallback(Nekomimi::EventReasonCode reasonCode,
     uint32_t size, pos;
     if (ResultCode result =
             response->owner->m_APIAdapter->GetKana(jobID, memory, BUFFER_LENGTH, &size, &pos);
-        result != Nekomimi::ERR_SUCCESS) {
+        result != ERR_SUCCESS) {
       break;
     }
     response->Write(memory, size);
@@ -187,7 +183,7 @@ int __stdcall Hanako::HiraganaCallback(Nekomimi::EventReasonCode reasonCode,
   }
   delete[] memory;
 
-  if (reasonCode == Nekomimi::TEXTBUF_CLOSE) {
+  if (reasonCode == TEXTBUF_CLOSE) {
     // CLOSEイベントの後にこのコールバックが呼ばれることは実践上ない
 
     char eventname[32];
@@ -201,8 +197,8 @@ int __stdcall Hanako::HiraganaCallback(Nekomimi::EventReasonCode reasonCode,
 int Hanako::Speech(const unsigned char* inbytes, short** outbytes, size_t* outsize) {
   Response* const response = new Response(this);
 
-  Nekomimi::TJobParam param;
-  param.modeInOut = Nekomimi::JobInOut::IOMODE_AIKANA_TO_WAVE;
+  TJobParam param;
+  param.modeInOut = JobInOut::IOMODE_AIKANA_TO_WAVE;
   param.userData = response;
 
   char eventname[32];
@@ -211,7 +207,7 @@ int Hanako::Speech(const unsigned char* inbytes, short** outbytes, size_t* outsi
 
   int32_t jobID;
   if (ResultCode result = m_APIAdapter->TextToSpeech(&jobID, &param, (const char*) inbytes);
-      result != Nekomimi::ERR_SUCCESS) {
+      result != ERR_SUCCESS) {
     delete response;
     throw std::runtime_error(string("TextToSpeech failed with result code ") +
                              std::to_string(result));
@@ -222,7 +218,7 @@ int Hanako::Speech(const unsigned char* inbytes, short** outbytes, size_t* outsi
   CloseHandle(event);
 
   // finalize
-  if (ResultCode result = m_APIAdapter->CloseSpeech(jobID); result != Nekomimi::ERR_SUCCESS) {
+  if (ResultCode result = m_APIAdapter->CloseSpeech(jobID); result != ERR_SUCCESS) {
     delete response;
     throw std::runtime_error("wtf");
   }
@@ -238,14 +234,13 @@ int Hanako::Speech(const unsigned char* inbytes, short** outbytes, size_t* outsi
   return 0;
 }
 
-int __stdcall Hanako::SpeechCallback(Nekomimi::EventReasonCode reasonCode,
+int __stdcall Hanako::SpeechCallback(EventReasonCode reasonCode,
                                      int32_t jobID,
                                      uint64_t tick,
-                                     Nekomimi::IntPtr userData) {
+                                     IntPtr userData) {
   Response* const response = (Response*) userData;
 
-  if (reasonCode != Nekomimi::RAWBUF_FULL && reasonCode != Nekomimi::RAWBUF_FLUSH &&
-      reasonCode != Nekomimi::RAWBUF_CLOSE) {
+  if (reasonCode != RAWBUF_FULL && reasonCode != RAWBUF_FLUSH && reasonCode != RAWBUF_CLOSE) {
     // unexpected: may possibly lead to memory leak
     return 0;
   }
@@ -256,7 +251,7 @@ int __stdcall Hanako::SpeechCallback(Nekomimi::EventReasonCode reasonCode,
     uint32_t size, pos;
     if (ResultCode result =
             response->owner->m_APIAdapter->GetData(jobID, memory, BUFFER_LENGTH, &size);
-        result != Nekomimi::ERR_SUCCESS) {
+        result != ERR_SUCCESS) {
       break;
     }
     response->Write16(memory, size);
@@ -266,7 +261,7 @@ int __stdcall Hanako::SpeechCallback(Nekomimi::EventReasonCode reasonCode,
   }
   delete[] memory;
 
-  if (reasonCode == Nekomimi::RAWBUF_CLOSE) {
+  if (reasonCode == RAWBUF_CLOSE) {
     // CLOSEイベントの後にこのコールバックが呼ばれることは実践上ない
 
     char eventname[32];
@@ -277,11 +272,11 @@ int __stdcall Hanako::SpeechCallback(Nekomimi::EventReasonCode reasonCode,
   return 0;
 }
 
-int __stdcall Hanako::ProcEventTTS(Nekomimi::EventReasonCode reasonCode,
+int __stdcall Hanako::ProcEventTTS(EventReasonCode reasonCode,
                                    int32_t jobID,
                                    uint64_t tick,
                                    const char* name,
-                                   Nekomimi::IntPtr userData) {
+                                   IntPtr userData) {
   return 0;
 }
 
@@ -301,4 +296,4 @@ vector<int16_t> Response::End16() {
   return std::move(m_Buffer16);
 }
 
-}  // namespace Hana
+}  // namespace ebyroid

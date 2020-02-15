@@ -6,7 +6,7 @@
 
 #include "nekomimi.h"
 
-namespace Hana {
+namespace ebyroid {
 
 class Hanako {
  public:
@@ -16,20 +16,18 @@ class Hanako {
 
  private:
   Hanako() {}
-  static int __stdcall HiraganaCallback(Nekomimi::EventReasonCode reasonCode,
-                                        int32_t jobID,
-                                        Nekomimi::IntPtr userData);
-  static int __stdcall SpeechCallback(Nekomimi::EventReasonCode reasonCode,
+  static int __stdcall HiraganaCallback(EventReasonCode reasonCode, int32_t jobID, IntPtr userData);
+  static int __stdcall SpeechCallback(EventReasonCode reasonCode,
                                       int32_t jobID,
                                       uint64_t tick,
-                                      Nekomimi::IntPtr userData);
-  static int __stdcall ProcEventTTS(Nekomimi::EventReasonCode reasonCode,
+                                      IntPtr userData);
+  static int __stdcall ProcEventTTS(EventReasonCode reasonCode,
                                     int32_t jobID,
                                     uint64_t tick,
                                     const char* name,
-                                    Nekomimi::IntPtr userData);
+                                    IntPtr userData);
 
-  Nekomimi::APIAdapter* m_APIAdapter;
+  APIAdapter* m_APIAdapter;
 };
 
 class Response {
@@ -46,6 +44,6 @@ class Response {
   std::vector<int16_t> m_Buffer16;
 };
 
-}  // namespace Hana
+}  // namespace ebyroid
 
 #endif  // HANA_H

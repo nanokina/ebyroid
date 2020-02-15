@@ -4,7 +4,7 @@
 
 #include "ebyutil.h"
 
-namespace Nekomimi {
+namespace ebyroid {
 
 using std::string;
 
@@ -61,4 +61,4 @@ Setting SettingBuilder::Build() {
   return std::move(setting);
 }
 
-}  // namespace Nekomimi
+}  // namespace ebyroid

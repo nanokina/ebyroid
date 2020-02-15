@@ -4,7 +4,7 @@
 
 #include <Windows.h>
 
-namespace Nekomimi {
+namespace ebyroid {
 
 APIAdapter* APIAdapter::Create(const char* pathToLibrary) {
   HINSTANCE handle = LoadLibraryA(pathToLibrary);
@@ -157,4 +157,4 @@ ResultCode APIAdapter::GetData(int32_t jobID, int16_t* rawBuf, uint32_t lenBuf, 
   return m_GetData(jobID, rawBuf, lenBuf, size);
 }
 
-}  // namespace Nekomimi
+}  // namespace ebyroid

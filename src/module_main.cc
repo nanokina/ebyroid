@@ -3,7 +3,7 @@
 #include "ebyutil.h"
 #include "hana.h"
 
-using Hana::Hanako;
+using ebyroid::Hanako;
 using std::string;
 
 typedef struct {

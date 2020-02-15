@@ -8,7 +8,7 @@ struct HINSTANCE__;
 typedef HINSTANCE__* HINSTANCE;
 #endif
 
-namespace Nekomimi {
+namespace ebyroid {
 
 static const int32_t MAX_VOICENAME_ = 80;
 static const int32_t CONTROL_LENGTH_ = 12;
@@ -210,6 +210,6 @@ class APIAdapter {
   APIGetData m_GetData;
 };
 
-}  // namespace Nekomimi
+}  // namespace ebyroid
 
 #endif  // NEKOMIMI_H

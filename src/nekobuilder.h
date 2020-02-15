@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-namespace Nekomimi {
+namespace ebyroid {
 
 static const size_t MAX_PATH_SIZE = 0xFF;
 static const int32_t FREQUENCY_44_ = 0xAC44;
@@ -37,6 +37,6 @@ class SettingBuilder {
   Setting Build();
 };
 
-}  // namespace Nekomimi
+}  // namespace ebyroid
 
 #endif  // NEKOBUILDER_H
