@@ -17,7 +17,7 @@ Setting SettingBuilder::Build() {
   std::strcpy(setting.dllPath, dllPath.c_str());
   std::strcpy(setting.licensePath, licensePath.c_str());
 
-  Dprintf("%s \n %s \n %s \n %s \n",
+  Dprintf("SettingBuilder\nbaseDir=%s\ndllPath=%s\nlicensePath=%s\nvoiceName=%s",
           setting.baseDir,
           setting.dllPath,
           setting.licensePath,
@@ -56,7 +56,10 @@ Setting SettingBuilder::Build() {
     setting.seed = EBY_SEED_A;
   }
 
-  Dprintf("%d \n %s \n %s \n", setting.frequency, setting.languageDir, setting.voiceDir);
+  Dprintf("SettingBuilder\nfrequency=%d\nlanguageDir=%s\nvoiceDir=%s",
+          setting.frequency,
+          setting.languageDir,
+          setting.voiceDir);
 
   return std::move(setting);
 }
