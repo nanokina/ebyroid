@@ -1,13 +1,13 @@
-#include "hana.h"
+#include "ebyroid.h"
 
 #include <stdexcept>
 #include <string>
 
 #include <Windows.h>
 
+#include "api_adapter.h"
+#include "api_settings.h"
 #include "ebyutil.h"
-#include "nekobuilder.h"
-#include "nekomimi.h"
 
 namespace ebyroid {
 

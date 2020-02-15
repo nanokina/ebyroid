@@ -1,5 +1,5 @@
-#ifndef NEKOBUILDER_H
-#define NEKOBUILDER_H
+#ifndef API_SETTINGS_H
+#define API_SETTINGS_H
 
 #include <string>
 
@@ -39,4 +39,4 @@ class SettingBuilder {
 
 }  // namespace ebyroid
 
-#endif  // NEKOBUILDER_H
+#endif  // API_SETTINGS_H

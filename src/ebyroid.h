@@ -1,10 +1,10 @@
-#ifndef HANA_H
-#define HANA_H
+#ifndef EBYROID_H
+#define EBYROID_H
 
 #include <string>
 #include <vector>
 
-#include "nekomimi.h"
+#include "api_adapter.h"
 
 namespace ebyroid {
 
@@ -46,4 +46,4 @@ class Response {
 
 }  // namespace ebyroid
 
-#endif  // HANA_H
+#endif  // EBYROID_H

@@ -1,5 +1,5 @@
-#ifndef NEKOMIMI_H
-#define NEKOMIMI_H
+#ifndef API_ADAPTER_H
+#define API_ADAPTER_H
 
 #include <stdint.h>
 
@@ -212,4 +212,4 @@ class APIAdapter {
 
 }  // namespace ebyroid
 
-#endif  // NEKOMIMI_H
+#endif  // API_ADAPTER_H

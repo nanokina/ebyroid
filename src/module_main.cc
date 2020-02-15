@@ -1,10 +1,9 @@
 #include <node_api.h>
 
+#include "ebyroid.h"
 #include "ebyutil.h"
-#include "hana.h"
 
 using ebyroid::Hanako;
-using std::string;
 
 typedef struct {
   Hanako* hanako;
