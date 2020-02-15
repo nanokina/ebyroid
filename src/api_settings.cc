@@ -8,60 +8,60 @@ namespace ebyroid {
 
 using std::string;
 
-Setting SettingBuilder::Build() {
-  Setting setting;
-  string dllPath = baseDir + WIN_DELIMIT_ + DLL_FILENAME_;
-  string licensePath = baseDir + WIN_DELIMIT_ + LIC_FILENAME_;
-  std::strcpy(setting.baseDir, baseDir.c_str());
-  std::strcpy(setting.voiceName, voiceName.c_str());
-  std::strcpy(setting.dllPath, dllPath.c_str());
-  std::strcpy(setting.licensePath, licensePath.c_str());
+Settings SettingsBuilder::Build() {
+  Settings settings;
+  string dll_path = base_dir + kWinDelimit + kDllFilename;
+  string license_path = base_dir + kWinDelimit + kLicFilename;
+  std::strcpy(settings.base_dir, base_dir.c_str());
+  std::strcpy(settings.voice_name, voice_name.c_str());
+  std::strcpy(settings.dll_path, dll_path.c_str());
+  std::strcpy(settings.license_path, license_path.c_str());
 
-  Dprintf("SettingBuilder\nbaseDir=%s\ndllPath=%s\nlicensePath=%s\nvoiceName=%s",
-          setting.baseDir,
-          setting.dllPath,
-          setting.licensePath,
-          setting.voiceName);
+  Dprintf("SettingBuilder\nbase_dir=%s\ndll_path=%s\nlicense_path=%s\nvoice_name=%s",
+          settings.base_dir,
+          settings.dll_path,
+          settings.license_path,
+          settings.voice_name);
 
-  if (voiceName.find("_22") != string::npos) {
+  if (voice_name.find("_22") != string::npos) {
     // this means the given library is VOICEROID+
-    setting.frequency = FREQUENCY_22_;
+    settings.frequency = kFrequency22;
 
-    string voiceDir = baseDir + WIN_DELIMIT_ + "voice";
-    string languageDir = baseDir + WIN_DELIMIT_ + "lang";
-    std::strcpy(setting.voiceDir, voiceDir.c_str());
-    std::strcpy(setting.languageDir, languageDir.c_str());
-    if (voiceName == "kiritan_22") {
-      setting.seed = EBY_SEED_B;
-    } else if (voiceName == "zunko_22") {
-      setting.seed = EBY_SEED_C;
-    } else if (voiceName == "akane_22") {
-      setting.seed = EBY_SEED_D;
-    } else if (voiceName == "aoi_22") {
-      setting.seed = EBY_SEED_E;
+    string voice_dir = base_dir + kWinDelimit + "voice";
+    string language_dir = base_dir + kWinDelimit + "lang";
+    std::strcpy(settings.voice_dir, voice_dir.c_str());
+    std::strcpy(settings.language_dir, language_dir.c_str());
+    if (voice_name == "kiritan_22") {
+      settings.seed = EBY_SEED_B;
+    } else if (voice_name == "zunko_22") {
+      settings.seed = EBY_SEED_C;
+    } else if (voice_name == "akane_22") {
+      settings.seed = EBY_SEED_D;
+    } else if (voice_name == "aoi_22") {
+      settings.seed = EBY_SEED_E;
     } else {
-      char message[64];
-      sprintf(message, "Unsupported VOICEROID+ library '%s' was given.", setting.voiceName);
-      throw new std::runtime_error(message);
+      char m[64];
+      std::snprintf(m, 64, "Unsupported VOICEROID+ library '%s' was given.", settings.voice_name);
+      throw new std::runtime_error(m);
     }
   } else {
     // this means it is either VOICEROID2 or an unexpected library
     // try to setup as VOCAROID2 anyways
-    setting.frequency = FREQUENCY_44_;
+    settings.frequency = kFrequency44;
 
-    string voiceDir = baseDir + WIN_DELIMIT_ + "Voice";
-    string languageDir = baseDir + WIN_DELIMIT_ + "Lang" + WIN_DELIMIT_ + "standard";
-    std::strcpy(setting.voiceDir, voiceDir.c_str());
-    std::strcpy(setting.languageDir, languageDir.c_str());
-    setting.seed = EBY_SEED_A;
+    string voice_dir = base_dir + kWinDelimit + "Voice";
+    string language_dir = base_dir + kWinDelimit + "Lang" + kWinDelimit + "standard";
+    std::strcpy(settings.voice_dir, voice_dir.c_str());
+    std::strcpy(settings.language_dir, language_dir.c_str());
+    settings.seed = EBY_SEED_A;
   }
 
-  Dprintf("SettingBuilder\nfrequency=%d\nlanguageDir=%s\nvoiceDir=%s",
-          setting.frequency,
-          setting.languageDir,
-          setting.voiceDir);
+  Dprintf("SettingBuilder\nfrequency=%d\nlanguage_dir=%s\nvoice_dir=%s",
+          settings.frequency,
+          settings.language_dir,
+          settings.voice_dir);
 
-  return std::move(setting);
+  return std::move(settings);
 }
 
 }  // namespace ebyroid

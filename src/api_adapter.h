@@ -1,8 +1,9 @@
 #ifndef API_ADAPTER_H
 #define API_ADAPTER_H
 
-#include <stdint.h>
+#include <cstdint>
 
+// forwarded declaration to avoid include Windows.h in header
 #ifndef _WINDEF_
 struct HINSTANCE__;
 typedef HINSTANCE__* HINSTANCE;
@@ -10,11 +11,21 @@ typedef HINSTANCE__* HINSTANCE;
 
 namespace ebyroid {
 
-static const int32_t MAX_VOICENAME_ = 80;
-static const int32_t CONTROL_LENGTH_ = 12;
-static const int32_t CONFIG_RAWBUF_SIZE_ = 0x158880;
+// fixed value from debugger
+static constexpr int32_t kMaxVoiceName = 80;
 
-enum EventReasonCode {
+// fixed value from debugger
+static constexpr int32_t kControlLength = 12;
+
+// fixed value from debugger
+static constexpr int32_t kConfigRawbufSize = 0x158880;
+
+//
+// following variable names and values are according to
+// the names and values that is revealed by debugger
+//
+
+enum EventReasonCode : uint32_t {
   TEXTBUF_FULL = 0x00000065,
   TEXTBUF_FLUSH = 0x00000066,
   TEXTBUF_CLOSE = 0x00000067,
@@ -27,10 +38,10 @@ enum EventReasonCode {
 };
 
 enum ExtendFormat : uint32_t {
-  None = 0,
-  JeitaRuby = 1,
-  AutoBookmark = 16,
-  Both = JeitaRuby | AutoBookmark
+  NONE = 0,
+  JEITA_RUBY = 1,
+  AUTO_BOOKMARK = 16,
+  BOTH = JEITA_RUBY | AUTO_BOOKMARK
 };
 
 enum JobInOut : uint32_t {
@@ -41,7 +52,7 @@ enum JobInOut : uint32_t {
   IOMODE_AIKANA_TO_JEITA = 32
 };
 
-enum ResultCode {
+enum ResultCode : int32_t {
   ERR_USERDIC_NOENTRY = -1012,
   ERR_USERDIC_LOCKED = -1011,
   ERR_COUNT_LIMIT = -1004,
@@ -69,7 +80,7 @@ enum ResultCode {
   ERR_NOMORE_DATA = 204
 };
 
-enum StatusCode {
+enum StatusCode : int32_t {
   STAT_WRONG_STATE = -1,
   STAT_INPROGRESS = 10,
   STAT_STILL_RUNNING = 11,
@@ -77,51 +88,51 @@ enum StatusCode {
 };
 
 typedef void* IntPtr;
-typedef int(__stdcall* ProcTextBuf)(EventReasonCode reasonCode, int32_t jobID, IntPtr userData);
-typedef int(__stdcall* ProcRawBuf)(EventReasonCode reasonCode,
-                                   int32_t jobID,
+typedef int(__stdcall* ProcTextBuf)(EventReasonCode reason_code, int32_t job_id, IntPtr user_data);
+typedef int(__stdcall* ProcRawBuf)(EventReasonCode reason_code,
+                                   int32_t job_id,
                                    uint64_t tick,
-                                   IntPtr userData);
-typedef int(__stdcall* ProcEventTTS)(EventReasonCode reasonCode,
-                                     int32_t jobID,
+                                   IntPtr user_data);
+typedef int(__stdcall* ProcEventTTS)(EventReasonCode reason_code,
+                                     int32_t job_id,
                                      uint64_t tick,
                                      const char* name,
-                                     IntPtr userData);
+                                     IntPtr user_data);
 
 #pragma pack(push, 1)
 struct TTtsParam {
   uint32_t size;
-  ProcTextBuf procTextBuf;
-  ProcRawBuf procRawBuf;
-  ProcEventTTS procEventTts;
-  uint32_t lenTextBufBytes;
-  uint32_t lenRawBufBytes;
+  ProcTextBuf proc_text_buf;
+  ProcRawBuf proc_raw_buf;
+  ProcEventTTS proc_event_tts;
+  uint32_t len_text_buf_bytes;
+  uint32_t len_raw_buf_bytes;
   float volume;
-  int32_t pauseBegin;
-  int32_t pauseTerm;
-  ExtendFormat extendFormat;
-  char voiceName[MAX_VOICENAME_];
+  int32_t pause_begin;
+  int32_t pause_term;
+  ExtendFormat extend_format;
+  char voice_name[kMaxVoiceName];
   struct TJeitaParam {
-    char femaleName[MAX_VOICENAME_];
-    char maleName[MAX_VOICENAME_];
-    int32_t pauseMiddle;
-    int32_t pauseLong;
-    int32_t pauseSentence;
-    char control[CONTROL_LENGTH_];
+    char female_name[kMaxVoiceName];
+    char male_name[kMaxVoiceName];
+    int32_t pause_middle;
+    int32_t pause_long;
+    int32_t pause_sentence;
+    char control[kControlLength];
   };
   TJeitaParam jeita;
-  uint32_t numSpeakers;
+  uint32_t num_speakers;
   int32_t __reserved__;
   struct TSpeakerParam {
-    char voiceName[MAX_VOICENAME_];
+    char voice_name[kMaxVoiceName];
     float volume;
     float speed;
     float pitch;
     float range;
-    int32_t pauseMiddle;
-    int32_t pauseLong;
-    int32_t pauseSentence;
-    char styleRate[MAX_VOICENAME_];
+    int32_t pause_middle;
+    int32_t pause_long;
+    int32_t pause_sentence;
+    char style_rate[kMaxVoiceName];
   };
   TSpeakerParam speaker[1];
 };
@@ -129,85 +140,78 @@ struct TTtsParam {
 
 #pragma pack(push, 1)
 struct TJobParam {
-  JobInOut modeInOut;
-  IntPtr userData;
+  JobInOut mode_in_out;
+  IntPtr user_data;
 };
 #pragma pack(pop)
 
 #pragma pack(push, 1)
 struct TConfig {
-  uint32_t hzVoiceDB;
-  const char* dirVoiceDBS;
-  uint32_t msecTimeout;
-  const char* pathLicense;
-  const char* codeAuthSeed;
-  uint32_t lenAuthSeed;
+  uint32_t hz_voice_db;
+  const char* dir_voice_dbs;
+  uint32_t msec_timeout;
+  const char* path_license;
+  const char* code_auth_seed;
+  uint32_t len_auth_seed;
 };
 #pragma pack(pop)
 
-class APIAdapter {
+class ApiAdapter {
  public:
-  ~APIAdapter();
+  ~ApiAdapter();
 
-  static APIAdapter* Create(const char* pathToLibrary);
+  static ApiAdapter* Create(const char* dll_path);
 
   ResultCode Init(TConfig* config);
   ResultCode End();
-  ResultCode SetParam(IntPtr pParam);
-  ResultCode GetParam(IntPtr pParam, uint32_t* size);
-  ResultCode LangLoad(const char* dirLang);
-  ResultCode VoiceLoad(const char* voiceName);
+  ResultCode SetParam(IntPtr p_param);
+  ResultCode GetParam(IntPtr p_param, uint32_t* size);
+  ResultCode LangLoad(const char* dir_lang);
+  ResultCode VoiceLoad(const char* voice_name);
   ResultCode VoiceClear();
-  ResultCode TextToKana(int32_t* jobID, TJobParam* param, const char* text);
-  ResultCode CloseKana(int32_t jobID, int32_t useEvent = 0);
-  ResultCode GetKana(int32_t jobID, char* textBuf, uint32_t lenBuf, uint32_t* size, uint32_t* pos);
-  ResultCode TextToSpeech(int32_t* jobID, TJobParam* param, const char* text);
-  ResultCode CloseSpeech(int32_t jobID, int32_t useEvent = 0);
-  ResultCode GetData(int32_t jobID, int16_t* rawBuf, uint32_t lenBuf, uint32_t* size);
+  ResultCode TextToKana(int32_t* job_id, TJobParam* param, const char* text);
+  ResultCode CloseKana(int32_t job_id, int32_t use_event = 0);
+  ResultCode GetKana(int32_t job_id,
+                     char* text_buf,
+                     uint32_t len_buf,
+                     uint32_t* size,
+                     uint32_t* pos);
+  ResultCode TextToSpeech(int32_t* job_id, TJobParam* param, const char* text);
+  ResultCode CloseSpeech(int32_t job_id, int32_t use_event = 0);
+  ResultCode GetData(int32_t job_id, int16_t* raw_buf, uint32_t len_buf, uint32_t* size);
 
  private:
-  APIAdapter() {}
+  ApiAdapter() {}
 
-  HINSTANCE m_LibraryInstanceHandle = nullptr;
+  typedef ResultCode(__stdcall* ApiInit)(TConfig*);
+  typedef ResultCode(__stdcall* ApiEnd)(void);
+  typedef ResultCode(__stdcall* ApiSetParam)(IntPtr);
+  typedef ResultCode(__stdcall* ApiGetParam)(IntPtr, uint32_t*);
+  typedef ResultCode(__stdcall* ApiLangLoad)(const char*);
+  typedef ResultCode(__stdcall* ApiVoiceLoad)(const char*);
+  typedef ResultCode(__stdcall* ApiVoiceClear)(void);
+  typedef ResultCode(__stdcall* ApiTextToKana)(int32_t*, TJobParam*, const char*);
+  typedef ResultCode(__stdcall* ApiCloseKana)(int32_t, int32_t);
+  typedef ResultCode(__stdcall* ApiGetKana)(int32_t, char*, uint32_t, uint32_t*, uint32_t*);
+  typedef ResultCode(__stdcall* ApiTextToSpeech)(int32_t*, TJobParam*, const char*);
+  typedef ResultCode(__stdcall* ApiCloseSpeech)(int32_t, int32_t);
+  typedef ResultCode(__stdcall* ApiGetData)(int32_t, int16_t*, uint32_t, uint32_t*);
 
-  typedef ResultCode(__stdcall* APIInit)(TConfig* config);
-  typedef ResultCode(__stdcall* APIEnd)(void);
-  typedef ResultCode(__stdcall* APISetParam)(IntPtr pParam);
-  typedef ResultCode(__stdcall* APIGetParam)(IntPtr pParam, uint32_t* size);
-  typedef ResultCode(__stdcall* APILangLoad)(const char* dirLang);
-  typedef ResultCode(__stdcall* APIVoiceLoad)(const char* voiceName);
-  typedef ResultCode(__stdcall* APIVoiceClear)(void);
-  typedef ResultCode(__stdcall* APITextToKana)(int32_t* jobID, TJobParam* param, const char* text);
-  typedef ResultCode(__stdcall* APICloseKana)(int32_t jobID,
-                                              int32_t useEvent);  // useEvent is default to 0
-  typedef ResultCode(__stdcall* APIGetKana)(int32_t jobID,
-                                            char* textBuf,
-                                            uint32_t lenBuf,
-                                            uint32_t* size,
-                                            uint32_t* pos);
-  typedef ResultCode(__stdcall* APITextToSpeech)(int32_t* jobID,
-                                                 TJobParam* param,
-                                                 const char* text);
-  typedef ResultCode(__stdcall* APICloseSpeech)(int32_t jobID,
-                                                int32_t useEvent);  // useEvent is default to 0
-  typedef ResultCode(__stdcall* APIGetData)(int32_t jobID,
-                                            int16_t* rawBuf,
-                                            uint32_t lenBuf,
-                                            uint32_t* size);
+  HINSTANCE dll_instance_ = nullptr;
 
-  APIInit m_Init;
-  APIEnd m_End;
-  APIVoiceLoad m_VoiceLoad;
-  APIVoiceClear m_VoiceClear;
-  APISetParam m_SetParam;
-  APIGetParam m_GetParam;
-  APILangLoad m_LangLoad;
-  APITextToKana m_TextToKana;
-  APICloseKana m_CloseKana;
-  APIGetKana m_GetKana;
-  APITextToSpeech m_TextToSpeech;
-  APICloseSpeech m_CloseSpeech;
-  APIGetData m_GetData;
+  ApiInit init_;
+  ApiEnd end_;
+  ApiVoiceLoad voice_load_;
+  ApiVoiceClear voice_clear_;
+  ApiSetParam set_param_;
+  ApiGetParam get_param_;
+  ApiLangLoad lang_load_;
+  ApiTextToKana text_to_kana_;
+  ApiCloseKana close_kana_;
+  ApiGetKana get_kana_;
+  ApiTextToSpeech text_to_speech_;
+  ApiCloseSpeech close_speech_;
+  ApiGetData get_data_;
 };
 
 }  // namespace ebyroid

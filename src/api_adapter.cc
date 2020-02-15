@@ -6,155 +6,155 @@
 
 namespace ebyroid {
 
-APIAdapter* APIAdapter::Create(const char* pathToLibrary) {
-  HINSTANCE handle = LoadLibraryA(pathToLibrary);
+ApiAdapter* ApiAdapter::Create(const char* dll_path) {
+  HINSTANCE handle = LoadLibraryA(dll_path);
   if (handle == nullptr) {
     return nullptr;
   }
 
-  APIAdapter* adapter = new APIAdapter;
-  adapter->m_Init = (APIInit) GetProcAddress(handle, "_AITalkAPI_Init@4");
-  if (adapter->m_Init == nullptr) {
+  ApiAdapter* adapter = new ApiAdapter;
+  adapter->init_ = (ApiInit) GetProcAddress(handle, "_AITalkAPI_Init@4");
+  if (adapter->init_ == nullptr) {
     FreeLibrary(handle);
     throw std::runtime_error("Could not find AITalkAPI_Init in the library.");
   }
 
-  adapter->m_End = (APIEnd) GetProcAddress(handle, "_AITalkAPI_End@0");
-  if (adapter->m_End == nullptr) {
+  adapter->end_ = (ApiEnd) GetProcAddress(handle, "_AITalkAPI_End@0");
+  if (adapter->end_ == nullptr) {
     FreeLibrary(handle);
     throw std::runtime_error("Could not find AITalkAPI_End in the library.");
   }
 
-  adapter->m_VoiceLoad = (APIVoiceLoad) GetProcAddress(handle, "_AITalkAPI_VoiceLoad@4");
-  if (adapter->m_VoiceLoad == nullptr) {
+  adapter->voice_load_ = (ApiVoiceLoad) GetProcAddress(handle, "_AITalkAPI_VoiceLoad@4");
+  if (adapter->voice_load_ == nullptr) {
     FreeLibrary(handle);
     throw std::runtime_error("Could not find AITalkAPI_VoiceLoad in the library.");
   }
 
-  adapter->m_VoiceClear = (APIVoiceClear) GetProcAddress(handle, "_AITalkAPI_VoiceClear@0");
-  if (adapter->m_VoiceClear == nullptr) {
+  adapter->voice_clear_ = (ApiVoiceClear) GetProcAddress(handle, "_AITalkAPI_VoiceClear@0");
+  if (adapter->voice_clear_ == nullptr) {
     FreeLibrary(handle);
     throw std::runtime_error("Could not find AITalkAPI_VoiceClear in the library.");
   }
 
-  adapter->m_SetParam = (APISetParam) GetProcAddress(handle, "_AITalkAPI_SetParam@4");
-  if (adapter->m_SetParam == nullptr) {
+  adapter->set_param_ = (ApiSetParam) GetProcAddress(handle, "_AITalkAPI_SetParam@4");
+  if (adapter->set_param_ == nullptr) {
     FreeLibrary(handle);
     throw std::runtime_error("Could not find AITalkAPI_SetParam in the library.");
   }
 
-  adapter->m_GetParam = (APIGetParam) GetProcAddress(handle, "_AITalkAPI_GetParam@8");
-  if (adapter->m_GetParam == nullptr) {
+  adapter->get_param_ = (ApiGetParam) GetProcAddress(handle, "_AITalkAPI_GetParam@8");
+  if (adapter->get_param_ == nullptr) {
     FreeLibrary(handle);
     throw std::runtime_error("Could not find AITalkAPI_GetParam in the library.");
   }
 
-  adapter->m_LangLoad = (APILangLoad) GetProcAddress(handle, "_AITalkAPI_LangLoad@4");
-  if (adapter->m_LangLoad == nullptr) {
+  adapter->lang_load_ = (ApiLangLoad) GetProcAddress(handle, "_AITalkAPI_LangLoad@4");
+  if (adapter->lang_load_ == nullptr) {
     FreeLibrary(handle);
     throw std::runtime_error("Could not find AITalkAPI_LangLoad in the library.");
   }
 
-  adapter->m_TextToKana = (APITextToKana) GetProcAddress(handle, "_AITalkAPI_TextToKana@12");
-  if (adapter->m_TextToKana == nullptr) {
+  adapter->text_to_kana_ = (ApiTextToKana) GetProcAddress(handle, "_AITalkAPI_TextToKana@12");
+  if (adapter->text_to_kana_ == nullptr) {
     FreeLibrary(handle);
     throw std::runtime_error("Could not find AITalkAPI_TextToKana in the library.");
   }
 
-  adapter->m_CloseKana = (APICloseKana) GetProcAddress(handle, "_AITalkAPI_CloseKana@8");
-  if (adapter->m_CloseKana == nullptr) {
+  adapter->close_kana_ = (ApiCloseKana) GetProcAddress(handle, "_AITalkAPI_CloseKana@8");
+  if (adapter->close_kana_ == nullptr) {
     FreeLibrary(handle);
     throw std::runtime_error("Could not find AITalkAPI_CloseKana in the library.");
   }
 
-  adapter->m_GetKana = (APIGetKana) GetProcAddress(handle, "_AITalkAPI_GetKana@20");
-  if (adapter->m_GetKana == nullptr) {
+  adapter->get_kana_ = (ApiGetKana) GetProcAddress(handle, "_AITalkAPI_GetKana@20");
+  if (adapter->get_kana_ == nullptr) {
     FreeLibrary(handle);
     throw std::runtime_error("Could not find AITalkAPI_GetKana in the library.");
   }
 
-  adapter->m_TextToSpeech = (APITextToSpeech) GetProcAddress(handle, "_AITalkAPI_TextToSpeech@12");
-  if (adapter->m_TextToSpeech == nullptr) {
+  adapter->text_to_speech_ = (ApiTextToSpeech) GetProcAddress(handle, "_AITalkAPI_TextToSpeech@12");
+  if (adapter->text_to_speech_ == nullptr) {
     FreeLibrary(handle);
     throw std::runtime_error("Could not find AITalkAPI_TextToSpeech in the library.");
   }
 
-  adapter->m_CloseSpeech = (APICloseSpeech) GetProcAddress(handle, "_AITalkAPI_CloseSpeech@8");
-  if (adapter->m_CloseSpeech == nullptr) {
+  adapter->close_speech_ = (ApiCloseSpeech) GetProcAddress(handle, "_AITalkAPI_CloseSpeech@8");
+  if (adapter->close_speech_ == nullptr) {
     FreeLibrary(handle);
     throw std::runtime_error("Could not find AITalkAPI_CloseSpeech in the library.");
   }
 
-  adapter->m_GetData = (APIGetData) GetProcAddress(handle, "_AITalkAPI_GetData@16");
-  if (adapter->m_GetData == nullptr) {
+  adapter->get_data_ = (ApiGetData) GetProcAddress(handle, "_AITalkAPI_GetData@16");
+  if (adapter->get_data_ == nullptr) {
     FreeLibrary(handle);
     throw std::runtime_error("Could not find AITalkAPI_GetData in the library.");
   }
 
-  adapter->m_LibraryInstanceHandle = handle;
+  adapter->dll_instance_ = handle;
   return adapter;
 }
 
-APIAdapter::~APIAdapter() {
-  if (m_LibraryInstanceHandle) {
-    FreeLibrary(m_LibraryInstanceHandle);
+ApiAdapter::~ApiAdapter() {
+  if (dll_instance_) {
+    FreeLibrary(dll_instance_);
   }
 }
 
-ResultCode APIAdapter::Init(TConfig* config) {
-  return m_Init(config);
+ResultCode ApiAdapter::Init(TConfig* config) {
+  return init_(config);
 }
 
-ResultCode APIAdapter::End() {
-  return m_End();
+ResultCode ApiAdapter::End() {
+  return end_();
 }
 
-ResultCode APIAdapter::VoiceLoad(const char* voiceName) {
-  return m_VoiceLoad(voiceName);
+ResultCode ApiAdapter::VoiceLoad(const char* voice_name) {
+  return voice_load_(voice_name);
 }
 
-ResultCode APIAdapter::VoiceClear() {
-  return m_VoiceClear();
+ResultCode ApiAdapter::VoiceClear() {
+  return voice_clear_();
 }
 
-ResultCode APIAdapter::SetParam(IntPtr pParam) {
-  return m_SetParam(pParam);
+ResultCode ApiAdapter::SetParam(IntPtr p_param) {
+  return set_param_(p_param);
 }
 
-ResultCode APIAdapter::GetParam(IntPtr pParam, uint32_t* size) {
-  return m_GetParam(pParam, size);
+ResultCode ApiAdapter::GetParam(IntPtr p_param, uint32_t* size) {
+  return get_param_(p_param, size);
 }
 
-ResultCode APIAdapter::LangLoad(const char* dirLang) {
-  return m_LangLoad(dirLang);
+ResultCode ApiAdapter::LangLoad(const char* dir_lang) {
+  return lang_load_(dir_lang);
 }
 
-ResultCode APIAdapter::TextToKana(int32_t* jobID, TJobParam* param, const char* text) {
-  return m_TextToKana(jobID, param, text);
+ResultCode ApiAdapter::TextToKana(int32_t* job_id, TJobParam* param, const char* text) {
+  return text_to_kana_(job_id, param, text);
 }
 
-ResultCode APIAdapter::CloseKana(int32_t jobID, int32_t useEvent) {
-  return m_CloseKana(jobID, useEvent);
+ResultCode ApiAdapter::CloseKana(int32_t job_id, int32_t use_event) {
+  return close_kana_(job_id, use_event);
 }
 
-ResultCode APIAdapter::GetKana(int32_t jobID,
-                               char* textBuf,
-                               uint32_t lenBuf,
+ResultCode ApiAdapter::GetKana(int32_t job_id,
+                               char* text_buf,
+                               uint32_t len_buf,
                                uint32_t* size,
                                uint32_t* pos) {
-  return m_GetKana(jobID, textBuf, lenBuf, size, pos);
+  return get_kana_(job_id, text_buf, len_buf, size, pos);
 }
 
-ResultCode APIAdapter::TextToSpeech(int32_t* jobID, TJobParam* param, const char* text) {
-  return m_TextToSpeech(jobID, param, text);
+ResultCode ApiAdapter::TextToSpeech(int32_t* job_id, TJobParam* param, const char* text) {
+  return text_to_speech_(job_id, param, text);
 }
 
-ResultCode APIAdapter::CloseSpeech(int32_t jobID, int32_t useEvent) {
-  return m_CloseSpeech(jobID, useEvent);
+ResultCode ApiAdapter::CloseSpeech(int32_t job_id, int32_t use_event) {
+  return close_speech_(job_id, use_event);
 }
 
-ResultCode APIAdapter::GetData(int32_t jobID, int16_t* rawBuf, uint32_t lenBuf, uint32_t* size) {
-  return m_GetData(jobID, rawBuf, lenBuf, size);
+ResultCode ApiAdapter::GetData(int32_t job_id, int16_t* raw_buf, uint32_t len_buf, uint32_t* size) {
+  return get_data_(job_id, raw_buf, len_buf, size);
 }
 
 }  // namespace ebyroid

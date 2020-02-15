@@ -1,12 +1,14 @@
 #include <node_api.h>
 
+#include <stdint.h>
+
 #include "ebyroid.h"
 #include "ebyutil.h"
 
-using ebyroid::Hanako;
+using ebyroid::Ebyroid;
 
 typedef struct {
-  Hanako* hanako;
+  Ebyroid* ebyroid;
 } module_context;
 
 typedef enum { WORK_HIRAGANA, WORK_SPEECH } work_type;
@@ -32,20 +34,20 @@ static void async_work_on_execute(napi_env env, void* data) {
     case WORK_HIRAGANA:
       try {
         unsigned char* out;
-        result = module->hanako->Hiragana(work->input, &out, &work->output_size);
+        result = module->ebyroid->Hiragana(work->input, &out, &work->output_size);
         work->output = out;
       } catch (std::exception& e) {
-        const char* m = "(Hana::Hanako::Hiragana)";
+        const char* m = "(ebyroid::Ebyroid::Hiragana)";
         napi_fatal_error(m, strlen(m), e.what(), strlen(e.what()));
       }
       break;
     case WORK_SPEECH:
       try {
-        short* out;
-        result = module->hanako->Speech(work->input, &out, &work->output_size);
+        int16_t* out;
+        result = module->ebyroid->Speech(work->input, &out, &work->output_size);
         work->output = out;
       } catch (std::exception& e) {
-        const char* m = "(Hana::Hanako::Speech)";
+        const char* m = "(ebyroid::Ebyroid::Speech)";
         napi_fatal_error(m, strlen(m), e.what(), strlen(e.what()));
       }
       break;
@@ -199,7 +201,7 @@ static napi_value export_func_reinterpret(napi_env env, napi_callback_info info)
 // JS Signature: init(baseDir: string, voice: string, volume: number) -> none
 //
 static napi_value export_func_init(napi_env env, napi_callback_info info) {
-  if (module->hanako == NULL) {
+  if (module->ebyroid == NULL) {
     return NULL;
   }
 
@@ -245,16 +247,16 @@ static napi_value export_func_init(napi_env env, napi_callback_info info) {
   status = napi_get_value_double(env, argv[2], &volume);
   en_assert(status == napi_ok);
 
-  // initialize hanako
+  // initialize ebyroid
   try {
-    module->hanako = Hanako::Create(install_dir_buffer, voice_dir_buffer, (float) volume);
+    module->ebyroid = Ebyroid::Create(install_dir_buffer, voice_dir_buffer, (float) volume);
   } catch (std::exception& e) {
-    const char* location = "(Hana::Hanako::Create)";
+    const char* location = "(ebyroid::Ebyroid::Create)";
     napi_fatal_error(location, strlen(location), e.what(), strlen(e.what()));
   }
 
-  // finalize hanako in the cleanup hook
-  status = napi_add_env_cleanup_hook(env, [](void* arg) { delete module->hanako; }, NULL);
+  // finalize ebyroid in the cleanup hook
+  status = napi_add_env_cleanup_hook(env, [](void* arg) { delete module->ebyroid; }, NULL);
   en_assert(status == napi_ok);
 
   free(install_dir_buffer);

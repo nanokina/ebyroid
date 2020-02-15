@@ -3,38 +3,39 @@
 
 #include <string>
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace ebyroid {
 
-static const size_t MAX_PATH_SIZE = 0xFF;
-static const int32_t FREQUENCY_44_ = 0xAC44;
-static const int32_t FREQUENCY_22_ = 0x5622;
-static const int32_t LEN_SEED_VALUE_ = 0;
-static const char* DLL_FILENAME_ = "aitalked.dll";
-static const char* LIC_FILENAME_ = "aitalk.lic";
-static const char* WIN_DELIMIT_ = "\\";
+static constexpr size_t kMaxPathSize = 0xFF;
+static constexpr int32_t kFrequency44 = 0xAC44;
+static constexpr int32_t kFrequency22 = 0x5622;
+static constexpr int32_t kLenSeedValue = 0;
+static constexpr char* kDllFilename = "aitalked.dll";
+static constexpr char* kLicFilename = "aitalk.lic";
+static constexpr char* kWinDelimit = "\\";
 
-struct Setting {
-  char baseDir[MAX_PATH_SIZE];
-  char dllPath[MAX_PATH_SIZE];
-  char voiceDir[MAX_PATH_SIZE];
-  char voiceName[16];
-  char languageDir[MAX_PATH_SIZE];
-  char licensePath[MAX_PATH_SIZE];
+struct Settings {
+  char base_dir[kMaxPathSize];
+  char dll_path[kMaxPathSize];
+  char voice_dir[kMaxPathSize];
+  char voice_name[16];
+  char language_dir[kMaxPathSize];
+  char license_path[kMaxPathSize];
   const char* seed;
   uint32_t frequency;
 };
 
-class SettingBuilder {
-  std::string baseDir;
-  std::string voiceName;
-
+class SettingsBuilder {
  public:
-  SettingBuilder(std::string baseDir, std::string voiceName)
-      : baseDir(baseDir), voiceName(voiceName) {}
+  SettingsBuilder(const std::string& base_dir, const std::string& voice_name)
+      : base_dir(base_dir), voice_name(voice_name) {}
 
-  Setting Build();
+  Settings Build();
+
+ private:
+  std::string base_dir;
+  std::string voice_name;
 };
 
 }  // namespace ebyroid
