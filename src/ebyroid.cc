@@ -1,6 +1,7 @@
 #include "ebyroid.h"
 
 #include <cstdint>
+#include <functional>
 #include <stdexcept>
 #include <string>
 
@@ -12,7 +13,44 @@
 
 namespace ebyroid {
 
-using std::string, std::vector;
+using std::string, std::vector, std::function, std::pair;
+
+namespace {
+
+inline pair<bool, string> WithDirecory(const char* dir, function<pair<bool, string>(void)> yield) {
+  static constexpr size_t kErrMax = 64 + MAX_PATH;
+  char org[MAX_PATH];
+  if (DWORD result = GetCurrentDirectoryA(MAX_PATH, org); result == 0) {
+    char m[64];
+    std::snprintf(m, 64, "Could not get the current directory.\n\tErrorNo = %d", GetLastError());
+    return pair(true, string(m));
+  }
+  if (BOOL result = SetCurrentDirectoryA(dir); !result) {
+    char m[kErrMax];
+    std::snprintf(m,
+                  kErrMax,
+                  "Could not change directory.\n\tErrorNo = %d\n\tTarget path: %s",
+                  GetLastError(),
+                  dir);
+    return pair(true, string(m));
+  }
+  auto [is_error, what] = yield();
+  if (BOOL result = SetCurrentDirectoryA(org); !result && !is_error) {
+    char m[kErrMax];
+    std::snprintf(m,
+                  kErrMax,
+                  "Could not change directory.\n\tErrorNo = %d\n\tTarget path: %s",
+                  GetLastError(),
+                  org);
+    return pair(true, string(m));
+  }
+  if (is_error) {
+    return pair(true, what);
+  }
+  return pair(false, string());
+}
+
+}  // namespace
 
 Ebyroid* Ebyroid::Create(const string& base_dir, const string& voice, float volume) {
   SettingsBuilder builder(base_dir, voice);
@@ -39,30 +77,17 @@ Ebyroid* Ebyroid::Create(const string& base_dir, const string& voice, float volu
     throw std::runtime_error(message);
   }
 
-  char properPath[MAX_PATH];
-  if (DWORD result = GetCurrentDirectoryA(MAX_PATH, properPath); result == 0) {
+  auto [is_error, what] = WithDirecory(settings.base_dir, [adapter, settings]() {
+    if (ResultCode result = adapter->LangLoad(settings.language_dir); result != ERR_SUCCESS) {
+      char m[128];
+      std::snprintf(m, 128, "API LangLoad failed (could not load language) with code %d", result);
+      return pair(true, string(m));
+    }
+    return pair(false, string());
+  });
+  if (is_error) {
     delete adapter;
-    string message = "Could not get the path to working directory properly. GetLastError() = ";
-    message += std::to_string(GetLastError());
-    throw std::runtime_error(message);
-  }
-  if (BOOL result = SetCurrentDirectoryA(settings.base_dir); !result) {
-    delete adapter;
-    string message = "Could not change working directory properly. GetLastError() = ";
-    message += std::to_string(GetLastError());
-    throw std::runtime_error(message);
-  }
-  if (ResultCode result = adapter->LangLoad(settings.language_dir); result != ERR_SUCCESS) {
-    delete adapter;
-    string message = "API Load Language failed (Could not load language file) with code ";
-    message += std::to_string(result);
-    throw std::runtime_error(message);
-  }
-  if (BOOL result = SetCurrentDirectoryA(properPath); !result) {
-    delete adapter;
-    string message = "Could not restore working directory properly. GetLastError() = ";
-    message += std::to_string(GetLastError());
-    throw std::runtime_error(message);
+    throw std::runtime_error(what);
   }
 
   if (ResultCode result = adapter->VoiceLoad(settings.voice_name); result != ERR_SUCCESS) {

@@ -37,7 +37,7 @@ class Response {
  public:
   Response(Ebyroid* owner) : owner_(owner) {}
   void Write(char* bytes, uint32_t size);
-  void Write16(int16_t* bytes, uint32_t size);
+  void Write16(int16_t* shorts, uint32_t size);
   std::vector<unsigned char> End();
   std::vector<int16_t> End16();
   Ebyroid* owner() { return owner_; }
