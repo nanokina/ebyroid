@@ -79,8 +79,8 @@ Ebyroid* Ebyroid::Create(const string& base_dir, const string& voice, float volu
 
   auto [is_error, what] = WithDirecory(settings.base_dir, [adapter, settings]() {
     if (ResultCode result = adapter->LangLoad(settings.language_dir); result != ERR_SUCCESS) {
-      char m[128];
-      std::snprintf(m, 128, "API LangLoad failed (could not load language) with code %d", result);
+      char m[64];
+      std::snprintf(m, 64, "API LangLoad failed (could not load language) with code %d", result);
       return pair(true, string(m));
     }
     return pair(false, string());
