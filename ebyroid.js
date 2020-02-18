@@ -4,7 +4,7 @@ const ebyroid = (() => {
     if (process.env.DEBUG) {
         return require('./build/Debug/ebyroid.node');
     } else {
-        return require('./build/Release/ebyroid.node'); 
+        return require('./build/Release/ebyroid.node');
     }
 })();
 
@@ -23,14 +23,14 @@ class Semaphore {
         this._stone = 0;
         this._waitings = [];
     }
-    
+
     acquire() {
         if (this._stone < this._max) {
             this._stone++;
             return new Promise((resolve) => resolve());
         } else {
             return new Promise((resolve) => {
-                this._waitings.push({resolve});
+                this._waitings.push({ resolve });
             });
         }
     }
@@ -56,6 +56,7 @@ class WaveObject {
         this.data = data;
         this.bitDepth = 16;
         this.sampleRate = sampleRate;
+        this.numChannels = 1;
     }
 
 }
@@ -75,7 +76,7 @@ class Ebyroid {
      * @param {string} voice - 音声ライブラリのフォルダ名
      * @param {number} volume - 出力波形のマスタ音量 1~5
      */
-    static init(path='C:\\Program Files (x86)\\AHS\\VOICEROID2', voice='akari_44', volume=2.5) {
+    static init(path = 'C:\\Program Files (x86)\\AHS\\VOICEROID2', voice = 'akari_44', volume = 2.5) {
         debug('Ebyroid.init arguments given: path=%s voice=%s volume=%d', path, voice, volume);
 
         if (this._ready) {
@@ -146,7 +147,7 @@ class Ebyroid {
         }
 
         let buffer = iconv.encode(rawText, Shift_JIS);
-        
+
         await this._semaphore.acquire();
 
         return new Promise((resolve) => {
@@ -157,7 +158,7 @@ class Ebyroid {
             });
         });
     }
-    
+
     /**
      * ネイティブモジュールで解釈可能テキストを音声に変換します。
      * 通常は {@link Ebyroid.speechText} を使用して下さい。
@@ -166,7 +167,7 @@ class Ebyroid {
      * @return {Promise<WaveObject>} 波形データオブジェクト
      */
     static async speechReinterpretedText(reinterpretedText) {
-        
+
         if (!this._ready) {
             return new Error('初期化前に Ebyroid.speechReinterpretedText が呼び出されました。');
         }
