@@ -71,13 +71,12 @@ static void async_work_on_complete(napi_env env, napi_status work_status, void* 
       e_assert(status == napi_ok);
       break;
     case WORK_SPEECH:
-      // convert output bytes to uint16array
+      // convert output bytes to int16array
       // create underlying arraybuffer
       void* node_memory;
       napi_value array_buffer;
       status = napi_create_arraybuffer(env, work->output_size, &node_memory, &array_buffer);
       e_assert(status == napi_ok);
-
       // copy data to arraybuffer and create int16array
       memcpy(node_memory, work->output, work->output_size);
       e_assert(work->output_size % 2 == 0);

@@ -11,22 +11,13 @@ typedef HINSTANCE__* HINSTANCE;
 
 namespace ebyroid {
 
-// fixed value from debugger
 static constexpr int32_t kMaxVoiceName = 80;
 
-// fixed value from debugger
 static constexpr int32_t kControlLength = 12;
 
-// fixed value from debugger
 static constexpr int32_t kConfigRawbufSize = 0x158880;
 
-// fixed value from debugger
 static constexpr int32_t kLenSeedValue = 0;
-
-//
-// following variable names and values are according to
-// the names and values that is revealed by debugger
-//
 
 enum EventReasonCode : uint32_t {
   TEXTBUF_FULL = 0x00000065,

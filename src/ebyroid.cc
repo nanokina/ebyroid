@@ -210,8 +210,6 @@ int __stdcall Ebyroid::HiraganaCallback(EventReasonCode reason_code,
   delete[] buffer;
 
   if (reason_code == TEXTBUF_CLOSE) {
-    // CLOSEイベントの後にこのコールバックが呼ばれることは実践上ない
-
     char eventname[32];
     sprintf(eventname, "TTKLOCK:%p", response);
     HANDLE event = OpenEventA(EVENT_ALL_ACCESS, FALSE, eventname);
@@ -288,8 +286,6 @@ int __stdcall Ebyroid::SpeechCallback(EventReasonCode reason_code,
   delete[] buffer;
 
   if (reason_code == RAWBUF_CLOSE) {
-    // CLOSEイベントの後にこのコールバックが呼ばれることは実践上ない
-
     char eventname[32];
     sprintf(eventname, "TTSLOCK:%p", response);
     HANDLE event = OpenEventA(EVENT_ALL_ACCESS, FALSE, eventname);
