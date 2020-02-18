@@ -75,7 +75,7 @@ class Ebyroid {
      * @param {string} voice - 音声ライブラリのフォルダ名
      * @param {number} volume - 出力波形のマスタ音量 1~5
      */
-    static init(path = 'C:\\Program Files (x86)\\AHS\\VOICEROID2', voice = 'akari_44', volume = 2.5) {
+    static init(path = 'C:\\Program Files (x86)\\AHS\\VOICEROID2', voice = 'akari_44', volume = 2.2) {
         debug('Ebyroid.init arguments given: path=%s voice=%s volume=%d', path, voice, volume);
 
         if (this._ready) {

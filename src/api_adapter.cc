@@ -4,6 +4,8 @@
 
 #include <Windows.h>
 
+#include "ebyutil.h"
+
 namespace ebyroid {
 
 namespace {
@@ -22,10 +24,30 @@ inline T LoadProc(const HINSTANCE& handle, const char* proc_name) {
 
 }  // namespace
 
-ApiAdapter* ApiAdapter::Create(const char* dll_path) {
+ApiAdapter* ApiAdapter::Create(const char* base_dir, const char* dll_path) {
+  if (BOOL ok = SetDllDirectoryA(base_dir); !ok) {
+    char m[128];
+    std::snprintf(m,
+                  128,
+                  "SetDllDirectory failed with code %d (Check out the voiceroid path setting)",
+                  GetLastError());
+    throw new std::runtime_error(m);
+  }
+
   HINSTANCE handle = LoadLibraryA(dll_path);
   if (handle == nullptr) {
-    return nullptr;
+    char m[128];
+    std::snprintf(m,
+                  128,
+                  "LoadLibrary failed with code %d (Check out the voiceroid path setting)",
+                  GetLastError());
+    throw new std::runtime_error(m);
+  }
+
+  if (BOOL ok = SetDllDirectoryA(nullptr); !ok) {
+    // this should not be so critical
+    Eprintf("SetDllDirectoryA(NULL) failed with code %d", GetLastError());
+    Eprintf("albeit the program will go on ignoring this error.");
   }
 
   ApiAdapter* adapter = new ApiAdapter;
