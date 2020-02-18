@@ -21,6 +21,8 @@ typedef struct {
   size_t output_size;
   napi_async_work self;
   napi_ref javascript_callback_ref;
+  char* error_message;
+  size_t error_size;
 } work_data;
 
 static module_context* module;
@@ -37,8 +39,12 @@ static void async_work_on_execute(napi_env env, void* data) {
         result = module->ebyroid->Hiragana(work->input, &out, &work->output_size);
         work->output = out;
       } catch (std::exception& e) {
-        const char* m = "(ebyroid::Ebyroid::Hiragana)";
-        napi_fatal_error(m, strlen(m), e.what(), strlen(e.what()));
+        Eprintf("(Ebyroid::Hiragana) %s", e.what());
+        size_t size = strlen(e.what());
+        char* what = (char*) malloc(size + 1);
+        strcpy(what, e.what());
+        work->error_message = what;
+        work->error_size = size;
       }
       break;
     case WORK_SPEECH:
@@ -47,27 +53,62 @@ static void async_work_on_execute(napi_env env, void* data) {
         result = module->ebyroid->Speech(work->input, &out, &work->output_size);
         work->output = out;
       } catch (std::exception& e) {
-        const char* m = "(ebyroid::Ebyroid::Speech)";
-        napi_fatal_error(m, strlen(m), e.what(), strlen(e.what()));
+        Eprintf("(Ebyroid::Speech) %s", e.what());
+        size_t size = strlen(e.what());
+        char* what = (char*) malloc(size + 1);
+        strcpy(what, e.what());
+        work->error_message = what;
+        work->error_size = size;
       }
       break;
   }
 }
 
 static void async_work_on_complete(napi_env env, napi_status work_status, void* data) {
-  if (work_status == napi_cancelled) {
-    // TODO: throw a Javascript exception
-    return;
-  }
-
+  static const size_t RETVAL_SIZE = 2;
   napi_status status;
-  napi_value retval[1], callback, undefined;
+  napi_value retval[RETVAL_SIZE];
+  napi_value callback, undefined, null_value;
   work_data* work = (work_data*) data;
 
+  // prepare JS 'undefined' value
+  status = napi_get_undefined(env, &undefined);
+  e_assert(status == napi_ok);
+
+  // prepare JS 'null' value
+  status = napi_get_null(env, &null_value);
+  e_assert(status == napi_ok);
+
+  if (work_status == napi_cancelled) {
+    static const char* what = "N-API async work has been cancelled";
+    napi_value message, error_object;
+    status = napi_create_string_utf8(env, what, strlen(what), &message);
+    e_assert(status == napi_ok);
+    status = napi_create_error(env, NULL, message, &error_object);
+    e_assert(status == napi_ok);
+
+    retval[0] = error_object;
+    retval[1] = null_value;
+    goto DO_FINALLY;
+  }
+
+  if (work->error_message) {
+    napi_value message, error_object;
+    status = napi_create_string_utf8(env, work->error_message, work->error_size, &message);
+    e_assert(status == napi_ok);
+    status = napi_create_error(env, NULL, message, &error_object);
+    e_assert(status == napi_ok);
+
+    retval[0] = error_object;
+    retval[1] = null_value;
+    goto DO_FINALLY;
+  }
+
+  napi_value return_value;
   switch (work->worktype) {
     case WORK_HIRAGANA:
       // convert output bytes to node buffer
-      status = napi_create_buffer_copy(env, work->output_size, work->output, NULL, &retval[0]);
+      status = napi_create_buffer_copy(env, work->output_size, work->output, NULL, &return_value);
       e_assert(status == napi_ok);
       break;
     case WORK_SPEECH:
@@ -81,21 +122,20 @@ static void async_work_on_complete(napi_env env, napi_status work_status, void* 
       memcpy(node_memory, work->output, work->output_size);
       e_assert(work->output_size % 2 == 0);
       status = napi_create_typedarray(
-          env, napi_int16_array, work->output_size / 2, array_buffer, 0, &retval[0]);
+          env, napi_int16_array, work->output_size / 2, array_buffer, 0, &return_value);
       e_assert(status == napi_ok);
       break;
   }
+  retval[0] = null_value;
+  retval[1] = return_value;
 
-  // retain access to 'undefined' as to pass it as the function receiver 'this'
-  status = napi_get_undefined(env, &undefined);
-  e_assert(status == napi_ok);
-
+DO_FINALLY:
   // acquire the javascript callback function
   status = napi_get_reference_value(env, work->javascript_callback_ref, &callback);
   e_assert(status == napi_ok);
 
   // actually call the javascript callback function
-  status = napi_call_function(env, undefined, callback, 1, retval, NULL);
+  status = napi_call_function(env, undefined, callback, RETVAL_SIZE, retval, NULL);
   e_assert(status == napi_ok || status == napi_pending_exception);
 
   // decrement the reference count of the function
@@ -109,8 +149,9 @@ static void async_work_on_complete(napi_env env, napi_status work_status, void* 
   e_assert(status == napi_ok);
 
   // and manually allocated recources
-  free((void*) work->input);
-  free((void*) work->output);
+  free(work->input);
+  free(work->output);
+  free(work->error_message);
   free(work);
 }
 
@@ -169,6 +210,8 @@ static napi_value do_async_work(napi_env env, napi_callback_info info, work_type
   work->input_size = node_buffer_size;
   work->javascript_callback_ref = callback_ref;
   work->worktype = worktype;
+  work->output = NULL;
+  work->error_message = NULL;
 
   // create async work object
   status = napi_create_async_work(

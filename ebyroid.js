@@ -1,5 +1,5 @@
 
-// Load C++ module 
+// Load C++ module
 const ebyroid = (() => {
     if (process.env.DEBUG) {
         return require('./build/Debug/ebyroid.node');
@@ -9,7 +9,6 @@ const ebyroid = (() => {
 })();
 
 const iconv = require('iconv-lite'); // VOICEROID2くんはShift_JISしか取り扱えない
-const Buffer = require('buffer').Buffer;
 const debug = require('debug')('ebyroid');
 debug.log = console.log.bind(console);
 
@@ -123,11 +122,20 @@ class Ebyroid {
 
         await this._semaphore.acquire();
 
-        return new Promise((resolve) => {
-            ebyroid.reinterpret(buffer, (kanaOut) => {
-                ebyroid.speech(kanaOut, (pcmOut) => {
+        return new Promise((resolve, reject) => {
+            ebyroid.reinterpret(buffer, (err, kanaOut) => {
+                if (err) {
                     this._semaphore.release();
-                    resolve(new WaveObject(pcmOut, this._sampleRate));
+                    reject(err);
+                    return;
+                }
+                ebyroid.speech(kanaOut, (err, pcmOut) => {
+                    this._semaphore.release();
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(new WaveObject(pcmOut, this._sampleRate));
+                    }
                 });
             });
         });
@@ -136,7 +144,7 @@ class Ebyroid {
     /**
      * ネイティブモジュールで文章を再解釈してVOICEROID読み上げ可能なテキストに変換します。
      * 通常は {@link Ebyroid.speechText} を使用してください。
-     * 
+     *
      * @param {string} rawText もとの文章
      * @return {Promise<string>} VOICEROIDが解釈可能なテキスト
      */
@@ -150,11 +158,15 @@ class Ebyroid {
 
         await this._semaphore.acquire();
 
-        return new Promise((resolve) => {
-            ebyroid.reinterpret(buffer, (output) => {
+        return new Promise((resolve, reject) => {
+            ebyroid.reinterpret(buffer, (err, output) => {
                 this._semaphore.release();
-                let utf8text = iconv.decode(output, Shift_JIS);
-                resolve(utf8text);
+                if (err) {
+                    reject(err);
+                } else {
+                    let utf8text = iconv.decode(output, Shift_JIS);
+                    resolve(utf8text);
+                }
             });
         });
     }
@@ -162,7 +174,7 @@ class Ebyroid {
     /**
      * ネイティブモジュールで解釈可能テキストを音声に変換します。
      * 通常は {@link Ebyroid.speechText} を使用して下さい。
-     * 
+     *
      * @param {string} reinterpretedText VOICEROIDが解釈可能なテキスト
      * @return {Promise<WaveObject>} 波形データオブジェクト
      */
@@ -176,10 +188,14 @@ class Ebyroid {
 
         await this._semaphore.acquire();
 
-        return new Promise((resolve) => {
-            ebyroid.speech(buffer, (pcmOut) => {
+        return new Promise((resolve, reject) => {
+            ebyroid.speech(buffer, (err, pcmOut) => {
                 this._semaphore.release();
-                resolve(new WaveObject(pcmOut, this._sampleRate));
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(new WaveObject(pcmOut, this._sampleRate));
+                }
             });
         });
     }

@@ -119,7 +119,7 @@ Ebyroid* Ebyroid::Create(const string& base_dir, const string& voice, float volu
     message += std::to_string(result);
     throw std::runtime_error(message);
   }
-  param->extend_format = JEITA_RUBY;
+  param->extend_format = BOTH;
   param->proc_text_buf = HiraganaCallback;
   param->proc_raw_buf = SpeechCallback;
   param->proc_event_tts = ProcEventTTS;
@@ -158,8 +158,13 @@ int Ebyroid::Hiragana(const unsigned char* inbytes, unsigned char** outbytes, si
   if (ResultCode result = api_adapter_->TextToKana(&job_id, &param, (const char*) inbytes);
       result != ERR_SUCCESS) {
     delete response;
-    throw std::runtime_error(string("TextToKana failed with result code ") +
-                             std::to_string(result));
+    ResetEvent(event);
+    CloseHandle(event);
+    static constexpr char* format = "TextToKana failed with the result code %d\n"
+                                    "Given inbytes: %s";
+    char m[0xFFFF];
+    std::snprintf(m, 0xFFFF, format, result, inbytes);
+    throw std::runtime_error(m);
   }
 
   WaitForSingleObject(event, INFINITE);
@@ -233,8 +238,13 @@ int Ebyroid::Speech(const unsigned char* inbytes, int16_t** outbytes, size_t* ou
   if (ResultCode result = api_adapter_->TextToSpeech(&job_id, &param, (const char*) inbytes);
       result != ERR_SUCCESS) {
     delete response;
-    throw std::runtime_error(string("TextToSpeech failed with result code ") +
-                             std::to_string(result));
+    ResetEvent(event);
+    CloseHandle(event);
+    static constexpr char* format = "TextToSpeech failed with the result code %d\n"
+                                    "Given inbytes: %s";
+    char m[0xFFFF];
+    std::snprintf(m, 0xFFFF, format, result, inbytes);
+    throw std::runtime_error(m);
   }
 
   WaitForSingleObject(event, INFINITE);

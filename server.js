@@ -7,7 +7,20 @@ Ebyroid.init('C:\\Program Files (x86)\\AHS\\VOICEROID+\\KiritanEX', 'kiritan_22'
 
 const server = http.createServer(async (req, res) => {
     const query = url.parse(req.url, true).query;
-    if (query.text) {
+    if (!query.text) {
+        const json = JSON.stringify({ error: 'Invalid argument' });
+        const headers = {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Content-Length': json.length
+        }
+        res.writeHead(400, headers);
+        res.write(json);
+        res.end();
+
+        return;
+    }
+
+    try {
         const waveObject = await Ebyroid.speechText(query.text);
         const buffer = Buffer.from(waveObject.data.buffer);
         const headers = {
@@ -20,19 +33,16 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(200, headers);
         res.write(buffer);
         res.end();
-
-    } else {
-        res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
-
-        let waveObject = await Ebyroid.speechText("なんかエラーが起きたみたいやな。");
-        let wav = new WaveFile();
-        wav.fromScratch(1, waveObject.sampleRate, '16', waveObject.data);
-
-        res.end((new Buffer(wav.toBuffer())).toString('base64'));
-
+    } catch (e) {
+        const json = JSON.stringify({ error: e.message });
+        const headers = {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Content-Length': json.length
+        }
+        res.writeHead(500, headers);
+        res.write(json);
+        res.end();
     }
-
-
 });
 
 server.listen(4090);

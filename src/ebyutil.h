@@ -31,6 +31,11 @@
 #define Dprintf(a, b) (void) (0)
 #endif
 
+#define Eprintf(a, ...)                                                                            \
+  do {                                                                                             \
+    fprintf(stderr, "\x1b[1;31m[ERROR]\x1b[0m " a "\n", __VA_ARGS__);                              \
+  } while (0)
+
 #define _____coffee(milk) #milk
 #define _____applepie(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t)                  \
   _____coffee(j##a##l##f##k##n##i##g##h##t##s##q##r##c##o##d##e##b##m##p)
