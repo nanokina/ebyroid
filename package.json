@@ -11,7 +11,7 @@
         "wavefile": "^11.0.0"
     },
     "scripts": {
-        "install": "cmake-js compile"
+        "install": "cmake-js compile && cmake-js compile -D"
     },
     "cmake-js": {
         "runtime": "node",
