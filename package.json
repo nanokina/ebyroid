@@ -2,6 +2,7 @@
     "name": "ebyroid",
     "version": "1.0.0",
     "description": "Node native addon for VOICEROID+ and VOICEROID2",
+    "main": "index.js",
     "dependencies": {
         "cmake-js": "^6.0.0",
         "debug": "^4.1.1",
