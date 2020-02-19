@@ -56,11 +56,7 @@ Ebyroid* Ebyroid::Create(const string& base_dir, const string& voice, float volu
   SettingsBuilder builder(base_dir, voice);
   Settings settings = builder.Build();
 
-  ApiAdapter* adapter = ApiAdapter::Create(settings.dll_path);
-  if (adapter == nullptr) {
-    throw std::runtime_error(string("Could not open the library file.\n\tGiven Path: ") +
-                             settings.dll_path);
-  }
+  ApiAdapter* adapter = ApiAdapter::Create(settings.base_dir, settings.dll_path);
 
   TConfig config;
   config.hz_voice_db = settings.frequency;

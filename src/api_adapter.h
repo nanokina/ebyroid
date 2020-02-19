@@ -154,7 +154,7 @@ class ApiAdapter {
  public:
   ~ApiAdapter();
 
-  static ApiAdapter* Create(const char* dll_path);
+  static ApiAdapter* Create(const char* base_dir, const char* dll_path);
 
   ResultCode Init(TConfig* config);
   ResultCode End();
