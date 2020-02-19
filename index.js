@@ -1,4 +1,4 @@
-import Ebyroid from './ebyroid';
+const { Ebyroid } = require('./ebyroid');
 
 module.exports = {
     Ebyroid
