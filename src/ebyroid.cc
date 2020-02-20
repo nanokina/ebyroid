@@ -17,40 +17,15 @@ using std::string, std::vector, std::function, std::pair;
 
 namespace {
 
-inline pair<bool, string> WithDirecory(const char* dir, function<pair<bool, string>(void)> yield) {
-  static constexpr size_t kErrMax = 64 + MAX_PATH;
-  char org[MAX_PATH];
-  if (DWORD result = GetCurrentDirectoryA(MAX_PATH, org); result == 0) {
-    char m[64];
-    std::snprintf(m, 64, "Could not get the current directory.\n\tErrorNo = %d", GetLastError());
-    return pair(true, string(m));
-  }
-  if (BOOL result = SetCurrentDirectoryA(dir); !result) {
-    char m[kErrMax];
-    std::snprintf(m,
-                  kErrMax,
-                  "Could not change directory.\n\tErrorNo = %d\n\tTarget path: %s",
-                  GetLastError(),
-                  dir);
-    return pair(true, string(m));
-  }
-  auto [is_error, what] = yield();
-  if (BOOL result = SetCurrentDirectoryA(org); !result && !is_error) {
-    char m[kErrMax];
-    std::snprintf(m,
-                  kErrMax,
-                  "Could not change directory.\n\tErrorNo = %d\n\tTarget path: %s",
-                  GetLastError(),
-                  org);
-    return pair(true, string(m));
-  }
-  if (is_error) {
-    return pair(true, what);
-  }
-  return pair(false, string());
-}
+int __stdcall HiraganaCallback(EventReasonCode, int32_t, IntPtr);
+int __stdcall SpeechCallback(EventReasonCode, int32_t, uint64_t, IntPtr);
+inline pair<bool, string> WithDirecory(const char* dir, function<pair<bool, string>(void)> yield);
 
 }  // namespace
+
+Ebyroid::~Ebyroid() {
+  delete api_adapter_;
+}
 
 Ebyroid* Ebyroid::Create(const string& base_dir, const string& voice, float volume) {
   SettingsBuilder builder(base_dir, voice);
@@ -101,9 +76,6 @@ Ebyroid* Ebyroid::Create(const string& base_dir, const string& voice, float volu
     message += std::to_string(result);
     throw std::runtime_error(message);
   }
-  // std::cout << "paramSize: "  << paramSize << std::endl;
-  // std::cout << "sizeof(Nekomimi::TTtsParam): " << sizeof(Nekomimi::TTtsParam) << std::endl;
-  // assert(paramSize == sizeof(Nekomimi::TTtsParam));
 
   char* param_buffer = new char[param_size];
   TTtsParam* param = (TTtsParam*) param_buffer;
@@ -118,7 +90,7 @@ Ebyroid* Ebyroid::Create(const string& base_dir, const string& voice, float volu
   param->extend_format = BOTH;
   param->proc_text_buf = HiraganaCallback;
   param->proc_raw_buf = SpeechCallback;
-  param->proc_event_tts = ProcEventTTS;
+  param->proc_event_tts = nullptr;
   param->len_raw_buf_bytes = kConfigRawbufSize;
   param->volume = volume;
   param->speaker[0].volume = 1.0;
@@ -133,13 +105,12 @@ Ebyroid* Ebyroid::Create(const string& base_dir, const string& voice, float volu
 
   delete[] param_buffer;
 
-  Ebyroid* ebyroid = new Ebyroid();
-  ebyroid->api_adapter_ = adapter;
+  Ebyroid* ebyroid = new Ebyroid(adapter);
   return ebyroid;
 }
 
 int Ebyroid::Hiragana(const unsigned char* inbytes, unsigned char** outbytes, size_t* outsize) {
-  Response* const response = new Response(this);
+  Response* const response = new Response(api_adapter_);
 
   TJobParam param;
   param.mode_in_out = IOMODE_PLAIN_TO_AIKANA;
@@ -184,43 +155,8 @@ int Ebyroid::Hiragana(const unsigned char* inbytes, unsigned char** outbytes, si
   return 0;
 }
 
-int __stdcall Ebyroid::HiraganaCallback(EventReasonCode reason_code,
-                                        int32_t job_id,
-                                        IntPtr user_data) {
-  Response* const response = (Response*) user_data;
-  ApiAdapter* api_adapter = response->owner()->api_adapter_;
-
-  if (reason_code != TEXTBUF_FULL && reason_code != TEXTBUF_FLUSH && reason_code != TEXTBUF_CLOSE) {
-    // unexpected: may possibly lead to memory leak
-    return 0;
-  }
-
-  static constexpr int kBufferSize = 0x1000;
-  char* buffer = new char[kBufferSize];
-  while (true) {
-    uint32_t size, pos;
-    if (ResultCode result = api_adapter->GetKana(job_id, buffer, kBufferSize, &size, &pos);
-        result != ERR_SUCCESS) {
-      break;
-    }
-    response->Write(buffer, size);
-    if (kBufferSize > size) {
-      break;
-    }
-  }
-  delete[] buffer;
-
-  if (reason_code == TEXTBUF_CLOSE) {
-    char eventname[32];
-    sprintf(eventname, "TTKLOCK:%p", response);
-    HANDLE event = OpenEventA(EVENT_ALL_ACCESS, FALSE, eventname);
-    SetEvent(event);
-  }
-  return 0;
-}
-
 int Ebyroid::Speech(const unsigned char* inbytes, int16_t** outbytes, size_t* outsize) {
-  Response* const response = new Response(this);
+  Response* const response = new Response(api_adapter_);
 
   TJobParam param;
   param.mode_in_out = IOMODE_AIKANA_TO_WAVE;
@@ -264,12 +200,63 @@ int Ebyroid::Speech(const unsigned char* inbytes, int16_t** outbytes, size_t* ou
   return 0;
 }
 
-int __stdcall Ebyroid::SpeechCallback(EventReasonCode reason_code,
-                                      int32_t job_id,
-                                      uint64_t tick,
-                                      IntPtr user_data) {
+void Response::Write(char* bytes, uint32_t size) {
+  buffer_.insert(std::end(buffer_), bytes, bytes + size);
+}
+
+void Response::Write16(int16_t* shorts, uint32_t size) {
+  buffer_16_.insert(std::end(buffer_16_), shorts, shorts + size);
+}
+
+vector<unsigned char> Response::End() {
+  return std::move(buffer_);
+}
+
+vector<int16_t> Response::End16() {
+  return std::move(buffer_16_);
+}
+
+namespace {
+
+int __stdcall HiraganaCallback(EventReasonCode reason_code, int32_t job_id, IntPtr user_data) {
   Response* const response = (Response*) user_data;
-  ApiAdapter* api_adapter = response->owner()->api_adapter_;
+  ApiAdapter* api_adapter = response->api_adapter();
+
+  if (reason_code != TEXTBUF_FULL && reason_code != TEXTBUF_FLUSH && reason_code != TEXTBUF_CLOSE) {
+    // unexpected: may possibly lead to memory leak
+    return 0;
+  }
+
+  static constexpr int kBufferSize = 0x1000;
+  char* buffer = new char[kBufferSize];
+  while (true) {
+    uint32_t size, pos;
+    if (ResultCode result = api_adapter->GetKana(job_id, buffer, kBufferSize, &size, &pos);
+        result != ERR_SUCCESS) {
+      break;
+    }
+    response->Write(buffer, size);
+    if (kBufferSize > size) {
+      break;
+    }
+  }
+  delete[] buffer;
+
+  if (reason_code == TEXTBUF_CLOSE) {
+    char eventname[32];
+    sprintf(eventname, "TTKLOCK:%p", response);
+    HANDLE event = OpenEventA(EVENT_ALL_ACCESS, FALSE, eventname);
+    SetEvent(event);
+  }
+  return 0;
+}
+
+int __stdcall SpeechCallback(EventReasonCode reason_code,
+                             int32_t job_id,
+                             uint64_t tick,
+                             IntPtr user_data) {
+  Response* const response = (Response*) user_data;
+  ApiAdapter* api_adapter = response->api_adapter();
 
   if (reason_code != RAWBUF_FULL && reason_code != RAWBUF_FLUSH && reason_code != RAWBUF_CLOSE) {
     // unexpected: may possibly lead to memory leak
@@ -300,28 +287,39 @@ int __stdcall Ebyroid::SpeechCallback(EventReasonCode reason_code,
   return 0;
 }
 
-int __stdcall Ebyroid::ProcEventTTS(EventReasonCode reason_code,
-                                    int32_t job_id,
-                                    uint64_t tick,
-                                    const char* name,
-                                    IntPtr user_data) {
-  return 0;
+inline pair<bool, string> WithDirecory(const char* dir, function<pair<bool, string>(void)> yield) {
+  static constexpr size_t kErrMax = 64 + MAX_PATH;
+  char org[MAX_PATH];
+  if (DWORD result = GetCurrentDirectoryA(MAX_PATH, org); result == 0) {
+    char m[64];
+    std::snprintf(m, 64, "Could not get the current directory.\n\tErrorNo = %d", GetLastError());
+    return pair(true, string(m));
+  }
+  if (BOOL result = SetCurrentDirectoryA(dir); !result) {
+    char m[kErrMax];
+    std::snprintf(m,
+                  kErrMax,
+                  "Could not change directory.\n\tErrorNo = %d\n\tTarget path: %s",
+                  GetLastError(),
+                  dir);
+    return pair(true, string(m));
+  }
+  auto [is_error, what] = yield();
+  if (BOOL result = SetCurrentDirectoryA(org); !result && !is_error) {
+    char m[kErrMax];
+    std::snprintf(m,
+                  kErrMax,
+                  "Could not change directory.\n\tErrorNo = %d\n\tTarget path: %s",
+                  GetLastError(),
+                  org);
+    return pair(true, string(m));
+  }
+  if (is_error) {
+    return pair(true, what);
+  }
+  return pair(false, string());
 }
 
-void Response::Write(char* bytes, uint32_t size) {
-  buffer_.insert(std::end(buffer_), bytes, bytes + size);
-}
-
-void Response::Write16(int16_t* shorts, uint32_t size) {
-  buffer_16_.insert(std::end(buffer_16_), shorts, shorts + size);
-}
-
-vector<unsigned char> Response::End() {
-  return std::move(buffer_);
-}
-
-vector<int16_t> Response::End16() {
-  return std::move(buffer_16_);
-}
+}  // namespace
 
 }  // namespace ebyroid
