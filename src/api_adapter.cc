@@ -69,7 +69,9 @@ ApiAdapter* ApiAdapter::Create(const char* base_dir, const char* dll_path) {
 }
 
 ApiAdapter::~ApiAdapter() {
-  FreeLibrary(dll_instance_);
+  if (BOOL result = FreeLibrary(dll_instance_); !result) {
+    Eprintf("FreeLibrary(HMODULE) failed. Though the program will go on, may lead to fatal error.");
+  }
 }
 
 ResultCode ApiAdapter::Init(TConfig* config) {

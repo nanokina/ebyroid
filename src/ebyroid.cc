@@ -133,8 +133,8 @@ int Ebyroid::Convert(const ConvertParams& params,
                      int16_t** outbytes,
                      size_t* outsize) {
   if (params.needs_reload) {
-    // TODO
-    return -1;
+    delete api_adapter_;
+    api_adapter_ = NewAdapter(params.base_dir, params.voice, params.volume);
   }
 
   return Speech(inbytes, outbytes, outsize, IOMODE_PLAIN_TO_WAVE);

@@ -5,13 +5,13 @@
 #include "ebyroid.h"
 #include "ebyutil.h"
 
-using ebyroid::Ebyroid;
+using ebyroid::Ebyroid, ebyroid::ConvertParams;
 
 typedef struct {
   Ebyroid* ebyroid;
 } module_context;
 
-typedef enum { WORK_HIRAGANA, WORK_SPEECH } work_type;
+typedef enum { WORK_HIRAGANA, WORK_SPEECH, WORK_CONVERT } work_type;
 
 typedef struct {
   work_type worktype;
@@ -23,6 +23,7 @@ typedef struct {
   napi_ref javascript_callback_ref;
   char* error_message;
   size_t error_size;
+  ConvertParams* convert_params;
 } work_data;
 
 static module_context* module;
@@ -54,6 +55,21 @@ static void async_work_on_execute(napi_env env, void* data) {
         work->output = out;
       } catch (std::exception& e) {
         Eprintf("(Ebyroid::Speech) %s", e.what());
+        size_t size = strlen(e.what());
+        char* what = (char*) malloc(size + 1);
+        strcpy(what, e.what());
+        work->error_message = what;
+        work->error_size = size;
+      }
+      break;
+    case WORK_CONVERT:
+      try {
+        int16_t* out;
+        result =
+            module->ebyroid->Convert(*work->convert_params, work->input, &out, &work->output_size);
+        work->output = out;
+      } catch (std::exception& e) {
+        Eprintf("(Ebyroid::Convert) %s", e.what());
         size_t size = strlen(e.what());
         char* what = (char*) malloc(size + 1);
         strcpy(what, e.what());
@@ -112,6 +128,7 @@ static void async_work_on_complete(napi_env env, napi_status work_status, void* 
       e_assert(status == napi_ok);
       break;
     case WORK_SPEECH:
+    case WORK_CONVERT:
       // convert output bytes to int16array
       // create underlying arraybuffer
       void* node_memory;
@@ -152,10 +169,18 @@ DO_FINALLY:
   free(work->input);
   free(work->output);
   free(work->error_message);
+  if (work->convert_params) {
+    free(work->convert_params->base_dir);
+    free(work->convert_params->voice);
+    free(work->convert_params);
+  }
   free(work);
 }
 
-static napi_value do_async_work(napi_env env, napi_callback_info info, work_type worktype) {
+static napi_value do_async_work(napi_env env,
+                                napi_callback_info info,
+                                work_type worktype,
+                                ConvertParams* convert_params = NULL) {
   napi_status status;
 
   size_t argc = 2;
@@ -191,6 +216,9 @@ static napi_value do_async_work(napi_env env, napi_callback_info info, work_type
     case WORK_SPEECH:
       workname = "Reinterpreted Text To PCM Converter";
       break;
+    case WORK_CONVERT:
+      workname = "Raw Text To PCM Converter";
+      break;
   }
 
   // create name identifier
@@ -212,6 +240,7 @@ static napi_value do_async_work(napi_env env, napi_callback_info info, work_type
   work->worktype = worktype;
   work->output = NULL;
   work->error_message = NULL;
+  work->convert_params = convert_params;
 
   // create async work object
   status = napi_create_async_work(
@@ -223,6 +252,17 @@ static napi_value do_async_work(napi_env env, napi_callback_info info, work_type
   en_assert(status == napi_ok);
 
   return NULL;
+}
+
+//
+// JS Signature: convert(inbytes: Buffer, done: function(pcm: Int16Array) -> none) -> none
+//
+static napi_value export_func_convert(napi_env env, napi_callback_info info) {
+  ConvertParams* params = (ConvertParams*) malloc(sizeof(*params));
+  params->needs_reload = false;
+  params->base_dir = NULL;
+  params->voice = NULL;
+  return do_async_work(env, info, WORK_CONVERT, params);
 }
 
 //
@@ -311,6 +351,7 @@ static napi_value module_main(napi_env env, napi_value exports) {
   napi_property_descriptor props[] = {
       {"speech", NULL, export_func_speech, NULL, NULL, NULL, napi_enumerable, NULL},
       {"reinterpret", NULL, export_func_reinterpret, NULL, NULL, NULL, napi_enumerable, NULL},
+      {"convert", NULL, export_func_convert, NULL, NULL, NULL, napi_enumerable, NULL},
       {"init", NULL, export_func_init, NULL, NULL, NULL, napi_enumerable, NULL},
   };
 

@@ -21,7 +21,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     try {
-        const waveObject = await Ebyroid.speechText(query.text);
+        const waveObject = await Ebyroid.convert(query.text);
         const buffer = Buffer.from(waveObject.data.buffer);
         const headers = {
             'Content-Type': 'application/octet-stream',
