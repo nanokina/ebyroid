@@ -17,6 +17,7 @@ using std::string, std::vector, std::function, std::pair;
 
 namespace {
 
+ApiAdapter* NewAdapter(const string&, const string&, float);
 int __stdcall HiraganaCallback(EventReasonCode, int32_t, IntPtr);
 int __stdcall SpeechCallback(EventReasonCode, int32_t, uint64_t, IntPtr);
 inline pair<bool, string> WithDirecory(const char* dir, function<pair<bool, string>(void)> yield);
@@ -28,83 +29,7 @@ Ebyroid::~Ebyroid() {
 }
 
 Ebyroid* Ebyroid::Create(const string& base_dir, const string& voice, float volume) {
-  SettingsBuilder builder(base_dir, voice);
-  Settings settings = builder.Build();
-
-  ApiAdapter* adapter = ApiAdapter::Create(settings.base_dir, settings.dll_path);
-
-  TConfig config;
-  config.hz_voice_db = settings.frequency;
-  config.msec_timeout = 1000;
-  config.path_license = settings.license_path;
-  config.dir_voice_dbs = settings.voice_dir;
-  config.code_auth_seed = settings.seed;
-  config.len_auth_seed = kLenSeedValue;
-
-  if (ResultCode result = adapter->Init(&config); result != ERR_SUCCESS) {
-    delete adapter;
-    string message = "API initialization failed with code ";
-    message += std::to_string(result);
-    throw std::runtime_error(message);
-  }
-
-  auto [is_error, what] = WithDirecory(settings.base_dir, [adapter, settings]() {
-    if (ResultCode result = adapter->LangLoad(settings.language_dir); result != ERR_SUCCESS) {
-      char m[64];
-      std::snprintf(m, 64, "API LangLoad failed (could not load language) with code %d", result);
-      return pair(true, string(m));
-    }
-    return pair(false, string());
-  });
-  if (is_error) {
-    delete adapter;
-    throw std::runtime_error(what);
-  }
-
-  if (ResultCode result = adapter->VoiceLoad(settings.voice_name); result != ERR_SUCCESS) {
-    delete adapter;
-    string message = "API Load Voice failed (Could not load voice data) with code ";
-    message += std::to_string(result);
-    throw std::runtime_error(message);
-  }
-
-  uint32_t param_size = 0;
-  if (ResultCode result = adapter->GetParam((void*) 0, &param_size);
-      result != ERR_INSUFFICIENT) {  // NOTE: Code -20 is expected here
-    delete adapter;
-    string message = "API Get Param failed (Could not acquire the size) with code ";
-    message += std::to_string(result);
-    throw std::runtime_error(message);
-  }
-
-  char* param_buffer = new char[param_size];
-  TTtsParam* param = (TTtsParam*) param_buffer;
-  param->size = param_size;
-  if (ResultCode result = adapter->GetParam(param, &param_size); result != ERR_SUCCESS) {
-    delete[] param_buffer;
-    delete adapter;
-    string message = "API Get Param failed with code ";
-    message += std::to_string(result);
-    throw std::runtime_error(message);
-  }
-  param->extend_format = BOTH;
-  param->proc_text_buf = HiraganaCallback;
-  param->proc_raw_buf = SpeechCallback;
-  param->proc_event_tts = nullptr;
-  param->len_raw_buf_bytes = kConfigRawbufSize;
-  param->volume = volume;
-  param->speaker[0].volume = 1.0;
-
-  if (ResultCode result = adapter->SetParam(param); result != ERR_SUCCESS) {
-    delete[] param_buffer;
-    delete adapter;
-    string message = "API Set Param failed with code ";
-    message += std::to_string(result);
-    throw std::runtime_error(message);
-  }
-
-  delete[] param_buffer;
-
+  ApiAdapter* adapter = NewAdapter(base_dir, voice, volume);
   Ebyroid* ebyroid = new Ebyroid(adapter);
   return ebyroid;
 }
@@ -232,6 +157,87 @@ vector<int16_t> Response::End16() {
 }
 
 namespace {
+
+ApiAdapter* NewAdapter(const string& base_dir, const string& voice, float volume) {
+  SettingsBuilder builder(base_dir, voice);
+  Settings settings = builder.Build();
+
+  ApiAdapter* adapter = ApiAdapter::Create(settings.base_dir, settings.dll_path);
+
+  TConfig config;
+  config.hz_voice_db = settings.frequency;
+  config.msec_timeout = 1000;
+  config.path_license = settings.license_path;
+  config.dir_voice_dbs = settings.voice_dir;
+  config.code_auth_seed = settings.seed;
+  config.len_auth_seed = kLenSeedValue;
+
+  if (ResultCode result = adapter->Init(&config); result != ERR_SUCCESS) {
+    delete adapter;
+    string message = "API initialization failed with code ";
+    message += std::to_string(result);
+    throw std::runtime_error(message);
+  }
+
+  auto [is_error, what] = WithDirecory(settings.base_dir, [adapter, settings]() {
+    if (ResultCode result = adapter->LangLoad(settings.language_dir); result != ERR_SUCCESS) {
+      char m[64];
+      std::snprintf(m, 64, "API LangLoad failed (could not load language) with code %d", result);
+      return pair(true, string(m));
+    }
+    return pair(false, string());
+  });
+  if (is_error) {
+    delete adapter;
+    throw std::runtime_error(what);
+  }
+
+  if (ResultCode result = adapter->VoiceLoad(settings.voice_name); result != ERR_SUCCESS) {
+    delete adapter;
+    string message = "API Load Voice failed (Could not load voice data) with code ";
+    message += std::to_string(result);
+    throw std::runtime_error(message);
+  }
+
+  uint32_t param_size = 0;
+  if (ResultCode result = adapter->GetParam((void*) 0, &param_size);
+      result != ERR_INSUFFICIENT) {  // NOTE: Code -20 is expected here
+    delete adapter;
+    string message = "API Get Param failed (Could not acquire the size) with code ";
+    message += std::to_string(result);
+    throw std::runtime_error(message);
+  }
+
+  char* param_buffer = new char[param_size];
+  TTtsParam* param = (TTtsParam*) param_buffer;
+  param->size = param_size;
+  if (ResultCode result = adapter->GetParam(param, &param_size); result != ERR_SUCCESS) {
+    delete[] param_buffer;
+    delete adapter;
+    string message = "API Get Param failed with code ";
+    message += std::to_string(result);
+    throw std::runtime_error(message);
+  }
+  param->extend_format = BOTH;
+  param->proc_text_buf = HiraganaCallback;
+  param->proc_raw_buf = SpeechCallback;
+  param->proc_event_tts = nullptr;
+  param->len_raw_buf_bytes = kConfigRawbufSize;
+  param->volume = volume;
+  param->speaker[0].volume = 1.0;
+
+  if (ResultCode result = adapter->SetParam(param); result != ERR_SUCCESS) {
+    delete[] param_buffer;
+    delete adapter;
+    string message = "API Set Param failed with code ";
+    message += std::to_string(result);
+    throw std::runtime_error(message);
+  }
+
+  delete[] param_buffer;
+
+  return adapter;
+}
 
 int __stdcall HiraganaCallback(EventReasonCode reason_code, int32_t job_id, IntPtr user_data) {
   Response* const response = (Response*) user_data;
