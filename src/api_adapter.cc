@@ -50,7 +50,7 @@ ApiAdapter* ApiAdapter::Create(const char* base_dir, const char* dll_path) {
     Eprintf("albeit the program will go on ignoring this error.");
   }
 
-  ApiAdapter* adapter = new ApiAdapter;
+  ApiAdapter* adapter = new ApiAdapter(handle);
   adapter->init_ = LoadProc<ApiInit>(handle, "_AITalkAPI_Init@4");
   adapter->end_ = LoadProc<ApiEnd>(handle, "_AITalkAPI_End@0");
   adapter->voice_load_ = LoadProc<ApiVoiceLoad>(handle, "_AITalkAPI_VoiceLoad@4");
@@ -65,13 +65,12 @@ ApiAdapter* ApiAdapter::Create(const char* base_dir, const char* dll_path) {
   adapter->close_speech_ = LoadProc<ApiCloseSpeech>(handle, "_AITalkAPI_CloseSpeech@8");
   adapter->get_data_ = LoadProc<ApiGetData>(handle, "_AITalkAPI_GetData@16");
 
-  adapter->dll_instance_ = handle;
   return adapter;
 }
 
 ApiAdapter::~ApiAdapter() {
-  if (dll_instance_) {
-    FreeLibrary(dll_instance_);
+  if (BOOL result = FreeLibrary(dll_instance_); !result) {
+    Eprintf("FreeLibrary(HMODULE) failed. Though the program will go on, may lead to fatal error.");
   }
 }
 

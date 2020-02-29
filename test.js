@@ -25,12 +25,18 @@ async function main() {
         Ebyroid.speechText('ああああああああああああああああああああああああああああああああああああああああああ')
             .then((x) => console.log(`${++c}: ${x.data.length}`));
     }
+
+    let ct = 400000;
+    for (const _ of Array(100)) {
+        Ebyroid.convert('おしりおしりおしり海老ねこねこねこねこねこ海老ねこねこねこねこねこ海老ねこねこねこねこねこ')
+            .then((x) => console.log(`${++ct}: ${x.data.length}`));
+    }
 }
 
 main();
 
 setTimeout(async () => {
-    let waveObject = await Ebyroid.speechText('私がシュリンプちゃんです。またの名を海老といいます。伊勢海老じゃないよ');
+    let waveObject = await Ebyroid.convert('私がシュリンプちゃんです。またの名を海老といいます。伊勢海老じゃないよ');
     console.info(JSON.stringify(waveObject).slice(0, 1000));
     let wav = new WaveFile();
     wav.fromScratch(1, waveObject.sampleRate, '16', waveObject.data);

@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-// forwarded declaration to avoid include Windows.h in header
+// forward-declaration to avoid including Windows.h in header
 #ifndef _WINDEF_
 struct HINSTANCE__;
 typedef HINSTANCE__* HINSTANCE;
@@ -152,6 +152,8 @@ struct TConfig {
 
 class ApiAdapter {
  public:
+  ApiAdapter(const ApiAdapter&) = delete;
+  ApiAdapter(ApiAdapter&&) = delete;
   ~ApiAdapter();
 
   static ApiAdapter* Create(const char* base_dir, const char* dll_path);
@@ -175,7 +177,7 @@ class ApiAdapter {
   ResultCode GetData(int32_t job_id, int16_t* raw_buf, uint32_t len_buf, uint32_t* size);
 
  private:
-  ApiAdapter() {}
+  ApiAdapter(HINSTANCE dll_instance) : dll_instance_(dll_instance) {}
 
   typedef ResultCode(__stdcall* ApiInit)(TConfig*);
   typedef ResultCode(__stdcall* ApiEnd)(void);

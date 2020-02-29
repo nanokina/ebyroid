@@ -107,6 +107,22 @@ class Ebyroid {
         this._ready = true;
     }
 
+    static async convert(text) {
+        const buffer = iconv.encode(text, Shift_JIS);
+        await this._semaphore.acquire();
+
+        return new Promise((resolve, reject) => {
+            ebyroid.convert(buffer, (err, pcmOut) => {
+                this._semaphore.release();
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(new WaveObject(pcmOut, this._sampleRate));
+                }
+            });
+        });
+    }
+
     /**
      * ネイティブモジュールで文章を読み上げます。
      * @param {string} text 読み上げる文章
