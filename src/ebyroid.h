@@ -10,6 +10,13 @@ namespace ebyroid {
 // forward-declaration to avoid including api_adapter.h
 class ApiAdapter;
 
+struct ConvertParams {
+  bool needs_reload;
+  char* base_dir;
+  char* voice;
+  float volume;
+};
+
 class Ebyroid {
  public:
   Ebyroid(const Ebyroid&) = delete;
@@ -18,7 +25,11 @@ class Ebyroid {
 
   static Ebyroid* Create(const std::string& base_dir, const std::string& voice, float volume);
   int Hiragana(const unsigned char* inbytes, unsigned char** outbytes, size_t* outsize);
-  int Speech(const unsigned char* inbytes, int16_t** outbytes, size_t* outsize);
+  int Speech(const unsigned char* inbytes, int16_t** outbytes, size_t* outsize, uint32_t mode = 0u);
+  int Convert(const ConvertParams& params,
+              const unsigned char* inbytes,
+              int16_t** outbytes,
+              size_t* outsize);
 
  private:
   Ebyroid(ApiAdapter* api_adapter) : api_adapter_(api_adapter) {}

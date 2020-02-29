@@ -155,11 +155,14 @@ int Ebyroid::Hiragana(const unsigned char* inbytes, unsigned char** outbytes, si
   return 0;
 }
 
-int Ebyroid::Speech(const unsigned char* inbytes, int16_t** outbytes, size_t* outsize) {
+int Ebyroid::Speech(const unsigned char* inbytes,
+                    int16_t** outbytes,
+                    size_t* outsize,
+                    uint32_t mode) {
   Response* const response = new Response(api_adapter_);
 
   TJobParam param;
-  param.mode_in_out = IOMODE_AIKANA_TO_WAVE;
+  param.mode_in_out = mode == 0u ? IOMODE_AIKANA_TO_WAVE : (JobInOut) mode;
   param.user_data = response;
 
   char eventname[32];
@@ -199,6 +202,18 @@ int Ebyroid::Speech(const unsigned char* inbytes, int16_t** outbytes, size_t* ou
   delete response;
   return 0;
 }
+
+int Ebyroid::Convert(const ConvertParams& params,
+                     const unsigned char* inbytes,
+                     int16_t** outbytes,
+                     size_t* outsize) {
+  if (params.needs_reload) {
+    // TODO
+    return -1;
+  }
+
+  return Speech(inbytes, outbytes, outsize, IOMODE_PLAIN_TO_WAVE);
+};
 
 void Response::Write(char* bytes, uint32_t size) {
   buffer_.insert(std::end(buffer_), bytes, bytes + size);
