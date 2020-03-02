@@ -22,14 +22,18 @@ async function main() {
 
     let c = 300000;
     for (const _ of Array(100)) {
-        Ebyroid.speechText('ああああああああああああああああああああああああああああああああああああああああああ')
+        Ebyroid.convert('ああああああああああああああああああああああああああああああああああああああああああ')
             .then((x) => console.log(`${++c}: ${x.data.length}`));
     }
 
-    let ct = 400000;
+    let d = 400000;
     for (const _ of Array(100)) {
-        Ebyroid.convert('おしりおしりおしり海老ねこねこねこねこねこ海老ねこねこねこねこねこ海老ねこねこねこねこねこ')
-            .then((x) => console.log(`${++ct}: ${x.data.length}`));
+        const options = {
+            base_dir: "C:\\Program Files (x86)\\AHS\\VOICEROID2",
+            voice: "akari_44",
+            volume: 2.1
+        };
+        Ebyroid.convertWithReload('さとみ', options).then(x => console.log(`${++d}: ${x.data.length}`));
     }
 }
 

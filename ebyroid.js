@@ -34,6 +34,33 @@ class Semaphore {
         }
     }
 
+    lock() {
+        if (this._stone === 0) {
+            this._stone = this._max;
+            return Promise.resolve();
+        } else {
+            return new Promise(resolve => {
+                let towait = this._stone;
+                this._stone = this._max;
+                const dec = () => {
+                    towait--;
+                    if (towait === 0) {
+                        resolve();
+                    }
+                };
+                for (let i = 0; i < towait; i++) {
+                    this._waitings.push({ resolve: dec });
+                }
+            });
+        }
+    }
+
+    unlock() {
+        for (let i = this._stone; i > 0; i--) {
+            this.release();
+        }
+    }
+
     release() {
         this._stone--;
         if (this._waitings.length > 0) {
@@ -107,52 +134,37 @@ class Ebyroid {
         this._ready = true;
     }
 
-    static async convert(text) {
+    static async convertWithReload(text, _options) {
         const buffer = iconv.encode(text, Shift_JIS);
-        await this._semaphore.acquire();
+        const options = Object.assign({}, _options, { needs_reload: true });
+        await this._semaphore.lock();
 
         return new Promise((resolve, reject) => {
-            ebyroid.convert(buffer, (err, pcmOut) => {
-                this._semaphore.release();
+            ebyroid.convert(buffer, options, (err, pcmOut) => {
+                this._semaphore.unlock();
                 if (err) {
                     reject(err);
                 } else {
+                    this._sampleRate = (_options.voice.endsWith('44')) ? 44100 : 22050;
                     resolve(new WaveObject(pcmOut, this._sampleRate));
                 }
             });
         });
     }
 
-    /**
-     * ネイティブモジュールで文章を読み上げます。
-     * @param {string} text 読み上げる文章
-     * @return {Promise<WaveObject>} 波形データオブジェクト
-     */
-    static async speechText(text) {
-
-        if (!this._ready) {
-            return new Error('初期化前に Ebyroid.speechText が呼び出されました。');
-        }
-
-        let buffer = iconv.encode(text, Shift_JIS);
-
+    static async convert(text) {
+        const buffer = iconv.encode(text, Shift_JIS);
+        const options = { needs_reload: false };
         await this._semaphore.acquire();
 
         return new Promise((resolve, reject) => {
-            ebyroid.reinterpret(buffer, (err, kanaOut) => {
+            ebyroid.convert(buffer, options, (err, pcmOut) => {
+                this._semaphore.release();
                 if (err) {
-                    this._semaphore.release();
                     reject(err);
-                    return;
+                } else {
+                    resolve(new WaveObject(pcmOut, this._sampleRate));
                 }
-                ebyroid.speech(kanaOut, (err, pcmOut) => {
-                    this._semaphore.release();
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(new WaveObject(pcmOut, this._sampleRate));
-                    }
-                });
             });
         });
     }
@@ -175,7 +187,7 @@ class Ebyroid {
         await this._semaphore.acquire();
 
         return new Promise((resolve, reject) => {
-            ebyroid.reinterpret(buffer, (err, output) => {
+            ebyroid.reinterpret(buffer, {}, (err, output) => {
                 this._semaphore.release();
                 if (err) {
                     reject(err);
@@ -205,7 +217,7 @@ class Ebyroid {
         await this._semaphore.acquire();
 
         return new Promise((resolve, reject) => {
-            ebyroid.speech(buffer, (err, pcmOut) => {
+            ebyroid.speech(buffer, {}, (err, pcmOut) => {
                 this._semaphore.release();
                 if (err) {
                     reject(err);
