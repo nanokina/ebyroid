@@ -1,21 +1,73 @@
 {
-    "name": "ebyroid",
-    "version": "1.0.0",
-    "description": "Node native addon for VOICEROID+ and VOICEROID2",
-    "main": "index.js",
-    "dependencies": {
-        "cmake-js": "^6.0.0",
-        "debug": "^4.1.1",
-        "iconv-lite": "^0.5.1",
-        "jschardet": "^2.1.1",
-        "wavefile": "^11.0.0"
-    },
-    "scripts": {
-        "install": "cmake-js compile && cmake-js compile -D"
-    },
-    "cmake-js": {
-        "runtime": "node",
-        "runtimeVersion": "13.8.0",
-        "arch": "ia32"
+  "name": "ebyroid",
+  "version": "0.1.0",
+  "description": "Node native addon for VOICEROID+ and VOICEROID2",
+  "author": "Kinas <kinahasss@gmail.com> (https://github.com/nanokina)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nanokina/ebyroid.git"
+  },
+  "keywords": [
+    "VOICEROID",
+    "VOICEROID+",
+    "VOICEROID2",
+    "Discord",
+    "Dispeak",
+    "TTS",
+    "Text To Speech"
+  ],
+  "main": "index.js",
+  "files": [
+    "CMakeLists.txt",
+    "lib",
+    "src"
+  ],
+  "type": "commonjs",
+  "engines": {
+    "node": ">=13.8.0"
+  },
+  "os": [
+    "win32"
+  ],
+  "arch": [
+    "ia32"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "cmake-js": "^6.0.0",
+    "debug": "^4.1.1",
+    "iconv-lite": "^0.5.1"
+  },
+  "scripts": {
+    "install": "cmake-js rebuild",
+    "test:run": "node ./test/test_run"
+  },
+  "cmake-js": {
+    "runtime": "node",
+    "runtimeVersion": "13.8.0",
+    "arch": "ia32"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
     }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix"
+    ]
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "husky": "^4.2.3",
+    "lint-staged": "^10.0.8",
+    "prettier": "^1.19.1",
+    "wavefile": "^11.0.0"
+  }
 }

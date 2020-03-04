@@ -1,5 +1,5 @@
-const { Ebyroid } = require('./ebyroid');
+const Ebyroid = require('./lib/ebyroid');
 
 module.exports = {
-    Ebyroid
+  Ebyroid,
 };

@@ -1,6 +1,7 @@
 ## Managed
 build/
 .vscode/
+*.wav
 
 ## Auto generated
 
