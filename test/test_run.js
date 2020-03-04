@@ -2,12 +2,20 @@
 const fs = require('fs');
 const { WaveFile } = require('wavefile');
 const Ebyroid = require('../lib/ebyroid');
+const Voiceroid = require('../lib/voiceroid');
 
-Ebyroid.init(
+const a = new Voiceroid(
   'C:\\Program Files (x86)\\AHS\\VOICEROID+\\KiritanEX',
   'kiritan_22',
   2.2
 );
+const b = new Voiceroid(
+  'C:\\Program Files (x86)\\AHS\\VOICEROID2',
+  'akari_44',
+  1.6
+);
+const ebyroid = new Ebyroid(a, b);
+ebyroid.use('kiritan_22');
 
 async function main() {
   await new Promise(r => {
@@ -15,40 +23,37 @@ async function main() {
   });
 
   new Array(100).fill(true).forEach((_, i) => {
-    Ebyroid.reinterpretText('東京特許許可局許可局長').then(x =>
-      console.error(`reinterpret ${i}: ${x}`)
-    );
+    ebyroid
+      .rawApiCallTextToKana('東京特許許可局許可局長')
+      .then(x => console.error(`reinterpret ${i}: ${x}`));
   });
 
   new Array(100).fill(true).forEach((_, i) => {
-    Ebyroid.speechReinterpretedText('アリガト').then(x =>
-      console.log(`speech ${i}: ${x.data.length}`)
-    );
+    ebyroid
+      .rawApiCallAiKanaToSpeech('アリガト')
+      .then(x => console.log(`speech ${i}: ${x.data.length}`));
   });
 
   new Array(100).fill(true).forEach((_, i) => {
-    Ebyroid.convert('あああああああああああああああああああああ').then(x =>
-      console.log(`convert ${i}: ${x.data.length}`)
-    );
+    ebyroid
+      .convert('あああああああああああああああああああああ')
+      .then(x => console.log(`convert ${i}: ${x.data.length}`));
   });
 
-  const options = {
-    base_dir: 'C:\\Program Files (x86)\\AHS\\VOICEROID2',
-    voice: 'akari_44',
-    volume: 2.1,
-  };
+  const voices = ['akari_44', 'kiritan_22'];
 
   new Array(100).fill(true).forEach((_, i) => {
-    Ebyroid.convertWithReload('どうか助けて下さい。', options).then(x =>
-      console.log(`convertWithReload ${i}: ${x.data.length}`)
-    );
+    const name = voices[(Math.random() * 2) | 0];
+    ebyroid
+      .convertEx('どうか助けて下さい。', name)
+      .then(x => console.log(`convertWithReload ${i}: ${x.data.length}`));
   });
 }
 
 main();
 
 setTimeout(async () => {
-  const waveObject = await Ebyroid.convert(
+  const waveObject = await ebyroid.convert(
     '私がシュリンプちゃんです。またの名を海老といいます。伊勢海老じゃないよ'
   );
   const wav = new WaveFile();
