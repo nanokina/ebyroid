@@ -41,7 +41,7 @@
   },
   "scripts": {
     "install": "cmake-js rebuild",
-    "test:run": "node ./test/test_run"
+    "test:run": "@powershell -Command $env:DEBUG='*';node ./test/test_run"
   },
   "cmake-js": {
     "runtime": "node",
