@@ -5,17 +5,17 @@ const Ebyroid = require('../lib/ebyroid');
 const Voiceroid = require('../lib/voiceroid');
 
 const a = new Voiceroid(
+  'kiri',
   'C:\\Program Files (x86)\\AHS\\VOICEROID+\\KiritanEX',
-  'kiritan_22',
-  2.2
+  'kiritan_22'
 );
 const b = new Voiceroid(
+  'akarin',
   'C:\\Program Files (x86)\\AHS\\VOICEROID2',
-  'akari_44',
-  1.6
+  'akari_44'
 );
 const ebyroid = new Ebyroid(a, b);
-ebyroid.use('kiritan_22');
+ebyroid.use('kiri');
 
 async function main() {
   await new Promise(r => {
@@ -40,13 +40,13 @@ async function main() {
       .then(x => console.log(`convert ${i}: ${x.data.length}`));
   });
 
-  const voices = ['akari_44', 'kiritan_22'];
+  const voices = ['kiri', 'akarin'];
 
-  new Array(100).fill(true).forEach((_, i) => {
+  new Array(300).fill(true).forEach((_, i) => {
     const name = voices[(Math.random() * 2) | 0];
     ebyroid
       .convertEx('どうか助けて下さい。', name)
-      .then(x => console.log(`convertWithReload ${i}: ${x.data.length}`));
+      .then(x => console.log(`convertEx ${i}: ${x.data.length}`));
   });
 }
 
