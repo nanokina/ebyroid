@@ -28,7 +28,7 @@ npm i ebyroid
 ```
 
 ### standalone server
-_TBD_
+Go to [Releases](https://github.com/nanokina/ebyroid/releases) and download the latest `ebyroid-v*.zip`. Then unzip it to wherever you want (e.g. `C:\ebyroid`).
 
 
 ## Usage
