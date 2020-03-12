@@ -136,7 +136,7 @@ When you need to interact with 32-bit code, it is necessary that your code also 
 
 Use [nvm](https://github.com/coreybutler/nvm-windows). Also, consider using Ebyroid's standalone server.
 
-### VOICEROID+ supports looks poor, why?
+### VOICEROID+ support looks poor, why?
 
 As of `VOICEROID2`, the software design is sophisticated and there's only one executable while voice library varies.\
 That's why `VOICEROID2` is fully supported. Just making a support for the one executable works fine.
