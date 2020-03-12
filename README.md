@@ -22,7 +22,7 @@ We also provide a standalone HTTP server as Win32 executable so you can avoid th
 
 ## Install
 ### npm package
-After you fulfilled requirements above:
+After you fulfilled the requirements above:
 ```
 npm i ebyroid
 ```
@@ -90,9 +90,9 @@ PS C:\ebyroid> ./ebyroid start --port 4567
 
 |               id               |        value        | desc            |
 | :----------------------------: | :-----------------: | :-------------- |
-|    Ebyroid-PCM-Sample-Rate     | `22050|44100|48000` | Samples per sec |
+|    Ebyroid-PCM-Sample-Rate     | `22050\|44100\|48000` | Samples per sec |
 |     Ebyroid-PCM-Bit-Depth      |        `16`         | Fixed to 16-bit |
-| Ebyroid-PCM-Number-Of-Channels |        `1|2`        | Mono or Stereo  |
+| Ebyroid-PCM-Number-Of-Channels |        `1\|2`        | Mono or Stereo  |
 
 Note that these headers will be sent only with `200 OK`.
 
@@ -123,7 +123,7 @@ None.
 #### response body
 
 Complete data for a `.wav` file.\
-Any modern browser should support either to play or to dowload it.
+Any modern browser should support either to play or to download it.
 
 ## FAQ
 
@@ -138,11 +138,10 @@ Use [nvm](https://github.com/coreybutler/nvm-windows). Also consider to use Ebyr
 
 ### VOICEROID+ supports looks poor, why?
 
-As of VOICEROID2, the software design is somewhat sophisticated\
-so you only need one executable while voice librariy varies.\
-That's why VOICEROID2 is fully supported. Just making a support for the one executable works fine.
+As of `VOICEROID2`, the software design is sophisticated and there's only one executable while voice librariy varies.\
+That's why `VOICEROID2` is fully supported. Just making a support for the one executable works fine.
 
-In contrast, every VOICEROID+ has its own executable, which means I need to write an individual support for each library.\
+In contrast, every `VOICEROID+` has its own executable, which means I need to write an individual support for each library.\
 And I just f--king ran out of money after buying 4 of them.
 
 I'd appreciate your support as in making a pull request, opening an issue or emailing me.
