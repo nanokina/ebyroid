@@ -28,7 +28,9 @@
     printf("\x1b[1;36m[C++ DEBUG]\x1b[0m " a "\n", __VA_ARGS__);                                   \
   } while (0)
 #else
-#define Dprintf(a, ...) (void) (0)
+#define Dprintf(a, ...)                                                                            \
+  do {                                                                                             \
+  } while (0)
 #endif
 
 #define Eprintf(a, ...)                                                                            \

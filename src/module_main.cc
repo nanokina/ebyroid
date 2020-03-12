@@ -177,14 +177,12 @@ DO_FINALLY:
   free(work);
 }
 
-static napi_value do_async_work(napi_env env,
-                                napi_callback_info info,
-                                work_type worktype,
-                                ConvertParams* convert_params = NULL) {
+static napi_value do_async_work(napi_env env, napi_callback_info info, work_type worktype) {
   napi_status status;
+  napi_valuetype valuetype;
 
-  size_t argc = 2;
-  napi_value argv[2];
+  size_t argc = 3;
+  napi_value argv[3];
   status = napi_get_cb_info(env, info, &argc, argv, NULL, NULL);
   en_assert(status == napi_ok);
 
@@ -193,9 +191,12 @@ static napi_value do_async_work(napi_env env,
   status = napi_is_buffer(env, argv[0], &is_buffer);
   en_assert(status == napi_ok && is_buffer == true);
 
-  // second arg must be function
-  napi_valuetype valuetype;
+  // second arg must be object
   status = napi_typeof(env, argv[1], &valuetype);
+  en_assert(status == napi_ok && valuetype == napi_object);
+
+  // third arg must be function
+  status = napi_typeof(env, argv[2], &valuetype);
   en_assert(status == napi_ok && valuetype == napi_function);
 
   // fetch buffer data
@@ -207,6 +208,62 @@ static napi_value do_async_work(napi_env env,
   unsigned char* buffer = (unsigned char*) malloc(node_buffer_size + 1);
   memcpy(buffer, node_buffer_data, node_buffer_size);
   *(buffer + node_buffer_size) = '\0';
+
+  // check if the object arg is for params
+  bool is_param;
+  status = napi_has_named_property(env, argv[1], "needs_reload", &is_param);
+  en_assert(status == napi_ok);
+
+  // build ConvertParam if it's for param
+  ConvertParams* params = NULL;
+  if (is_param) {
+    napi_value value;
+    params = (ConvertParams*) malloc(sizeof(*params));
+
+    // fetch .needs_reload boolean
+    status = napi_get_named_property(env, argv[1], "needs_reload", &value);
+    en_assert(status == napi_ok);
+    status = napi_get_value_bool(env, value, &params->needs_reload);
+    en_assert(status == napi_ok);
+
+    if (params->needs_reload) {
+      size_t bufsize;
+
+      // fetch .base_dir string
+      char* base_dir;
+      status = napi_get_named_property(env, argv[1], "base_dir", &value);
+      en_assert(status == napi_ok);
+      status = napi_get_value_string_utf8(env, value, NULL, NULL, &bufsize);
+      en_assert(status == napi_ok);
+      base_dir = (char*) malloc(bufsize + 1);
+      status = napi_get_value_string_utf8(env, value, base_dir, bufsize + 1, NULL);
+      en_assert(status == napi_ok);
+      params->base_dir = base_dir;
+
+      // fetch .voice string
+      char* voice;
+      status = napi_get_named_property(env, argv[1], "voice", &value);
+      en_assert(status == napi_ok);
+      status = napi_get_value_string_utf8(env, value, NULL, NULL, &bufsize);
+      en_assert(status == napi_ok);
+      voice = (char*) malloc(bufsize + 1);
+      status = napi_get_value_string_utf8(env, value, voice, bufsize + 1, NULL);
+      en_assert(status == napi_ok);
+      params->voice = voice;
+
+      // fetch .volume float
+      double volume;
+      status = napi_get_named_property(env, argv[1], "volume", &value);
+      en_assert(status == napi_ok);
+      status = napi_get_value_double(env, value, &volume);
+      en_assert(status == napi_ok);
+      params->volume = (float) volume;
+
+    } else {
+      params->base_dir = NULL;
+      params->voice = NULL;
+    }
+  }
 
   char* workname;
   switch (worktype) {
@@ -229,7 +286,7 @@ static napi_value do_async_work(napi_env env,
   // create reference for the callback fucntion
   // because it otherwise will soon get GC'd
   napi_ref callback_ref;
-  status = napi_create_reference(env, argv[1], 1, &callback_ref);
+  status = napi_create_reference(env, argv[2], 1, &callback_ref);
   en_assert(status == napi_ok);
 
   // create working data
@@ -240,7 +297,7 @@ static napi_value do_async_work(napi_env env,
   work->worktype = worktype;
   work->output = NULL;
   work->error_message = NULL;
-  work->convert_params = convert_params;
+  work->convert_params = params;
 
   // create async work object
   status = napi_create_async_work(
@@ -255,25 +312,24 @@ static napi_value do_async_work(napi_env env,
 }
 
 //
-// JS Signature: convert(inbytes: Buffer, done: function(pcm: Int16Array) -> none) -> none
+// JS Signature:
+//   convert(inbytes: Buffer, options: object, done: function(err, pcm: Int16Array) -> none) -> none
 //
 static napi_value export_func_convert(napi_env env, napi_callback_info info) {
-  ConvertParams* params = (ConvertParams*) malloc(sizeof(*params));
-  params->needs_reload = false;
-  params->base_dir = NULL;
-  params->voice = NULL;
-  return do_async_work(env, info, WORK_CONVERT, params);
+  return do_async_work(env, info, WORK_CONVERT);
 }
 
 //
-// JS Signature: speech(inbytes: Buffer, done: function(pcm: Int16Array) -> none) -> none
+// JS Signature:
+//   speech(inbytes: Buffer, options={}, done: function(err, pcm: Int16Array) -> none) -> none
 //
 static napi_value export_func_speech(napi_env env, napi_callback_info info) {
   return do_async_work(env, info, WORK_SPEECH);
 }
 
 //
-// JS Signature: reinterpret(inbytes: Buffer, done: function(outbytes: Buffer) -> none) -> none
+// JS Signature:
+//   reinterpret(inbytes: Buffer, options={}, done: function(err, outbytes: Buffer) -> none) -> none
 //
 static napi_value export_func_reinterpret(napi_env env, napi_callback_info info) {
   return do_async_work(env, info, WORK_HIRAGANA);
