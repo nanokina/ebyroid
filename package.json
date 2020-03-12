@@ -1,6 +1,6 @@
 {
   "name": "ebyroid",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Node native addon for VOICEROID+ and VOICEROID2",
   "author": "Kinas <kinahasss@gmail.com> (https://github.com/nanokina)",
   "repository": {
