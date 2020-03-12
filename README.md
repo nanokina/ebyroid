@@ -1,20 +1,17 @@
 # ebyroid
-Ebyroid is a node native addon for VOICEROID+ and VOICEROID2 supports, for node apps that use Text-To-Speech.
-It provides an access from Node.js Javascript to VOICEROIDs through N-API and native codes, which is fast.
+Ebyroid is a node native addon for `VOICEROID+` and `VOICEROID2` supports.\
+It provides an access from Node.js Javascript to VOICEROIDs through N-API and native codes, which is fast.\
 We also provide a standalone HTTP server as Win32 executable so you can avoid the **certain difficult problems**.
 
 ### Supported VOICEROIDs
-- VOICEROID2
-- VOICEROID+ (partially)
+- `VOICEROID2`
+- `VOICEROID+` (partially)
   - Tohoku Zunko, Tohoku KiritanEx, Kotonoha Akane, Kotonoha Aoi
 
 ### Requirements (as npm package)
 - Windows (10 or Server recomennded)
-  - VOICEROIDs are built for Windows
 - **Node.js for Windows x86 (win32-ia32)** - `^12.13.1`
-  - As all the libraries of VOICEROIDs are Win32 executable, your node is required to be Win32 aswell
 - [CMake for Windows](https://cmake.org/download/) - `^3.16.4`
-- NMake, Ninja or whatever you want to use with CMake
 - MSVC `^2017`, or just get the latest [Visual Studio Community](https://visualstudio.microsoft.com/ja/free-developer-offers/) if you aren't certain what it would mean
 - Powershell `^3`
 - Voiceroid libraries installed with a valid and legitimate license
@@ -101,8 +98,8 @@ Note that these headers will be sent only with `200 OK`.
 
 #### response body
 
-Byte stream of the [Linear PCM](http://soundfile.sapp.org/doc/WaveFormat/) data.
-The stream doesn't contain Wave File header bytes since this endpoint is rather for those who want to deal with raw audio data.
+Byte stream of the [Linear PCM](http://soundfile.sapp.org/doc/WaveFormat/) data.\
+The stream doesn't contain file header bytes since this endpoint is rather for those who want to deal with raw audio data.\
 Use `GET /api/v1/audiofile` instead if you demand `.wav` file.
 
 ### `GET /api/v1/audiofile`
@@ -125,14 +122,14 @@ None.
 
 #### response body
 
-Complete data for a `.wav` file.
+Complete data for a `.wav` file.\
 Any modern browser should support either to play or to dowload it.
 
 ## FAQ
 
 ### Why do I have to use 32-bit node?
 
-Because Ebyroid is a native addon that interacts with VOICEROID's 32-bit native code.
+Because Ebyroid is a native addon that interacts with VOICEROID's 32-bit native code.\
 When you need to interact with 32-bit code, it is necessary that your code also runs in 32-bit.
 
 ### How do I switch 64-bit node and 32-bit node?
@@ -141,16 +138,19 @@ Use [nvm](https://github.com/coreybutler/nvm-windows). Also consider to use Ebyr
 
 ### VOICEROID+ supports looks poor, why?
 
-As of VOICEROID2, the software design is somewhat sophisticated so you only need one executable while voice librariy varies.
-That's why VOICEROID2 is fully supported. Just making a support for the one executable works fine.
+As of VOICEROID2, the software design is somewhat sophisticated\
+so you only need one executable while voice librariy varies.\
+That's why VOICEROID2 is fully supported. Just making a support for the one executable works fine.\
 
-In contrast, every VOICEROID+ has its own executable, which means I need to write an individual support for each library. And I just f--king ran out of money after buying 4 of them.
+In contrast, every VOICEROID+ has its own executable, which means I need to write an individual support for each library.\
+And I just f--king ran out of money after buying 4 of them.\
 
 I'd appreciate your support as in making a pull request, opening an issue or emailing me.
 
 ### Does Ebyroid support concurrency?
 
-Yes. It sticks to asynchronous operation as hard as I can do in native code so as not to break Node's concept. That results in Ebyroid being able to process `^100RPS` when the CPU is fast enough.
+Yes. It sticks to asynchronous operation as hard as I can do in native code so as not to break Node's concept.\
+That results in Ebyroid being able to process `^100RPS` when the CPU is fast enough.\
 
 That said, however, some operation like switching voiceroid may acquire the inter-thread lock and take couple hundreds of millis (200ms-400ms practically) solely by itself. Be aware that frequent occurrance of such events may lead to slowen the whole app.
 
@@ -158,11 +158,11 @@ That said, however, some operation like switching voiceroid may acquire the inte
 MIT. See LICENSE.
 
 ## Disclaimer
-Since Ebyroid is merely an ad-hoc, non-profit, open source and free library that interacts with VOICEROID, it doesn't contain any data with commercial value nor has any intent to exploit. Ebyroid only uses information loaded to RAM in human readable format, such like a string, considered to be public, as means of Fair Use of public information.
+Since Ebyroid is merely an ad-hoc, non-profit, open source and free library that interacts with VOICEROID, it doesn't contain any data with commercial value nor has any intent to exploit. Ebyroid only uses information loaded to RAM in human readable format, such like a string, considered to be public, as means of Fair Use of public information.\
 
-I will never be responsible for any consequences in connection with any use of Ebyroid or anyone that uses Ebyroid. I will only be concerned with calls of the US federal courts through Github, Inc. thus any other call and request from other authority or a company shall be ignored and immediately removed.
+I will never be responsible for any consequences in connection with any use of Ebyroid or anyone that uses Ebyroid. I will only be concerned with calls of the US federal courts through Github, Inc. thus any other call and request from other authority or a company shall be ignored and immediately removed.\
 
-FAIR-USE COPYRIGHT DISCLAIMER
+FAIR-USE COPYRIGHT DISCLAIMER\
 
 Copyright Disclaimer Under Section 107 of the Copyright Act 1976, allowance is made for "fair use" for purposes such as criticism, commenting, news reporting, teaching, scholarship, and research. Fair use is a use permitted by copyright statute that might otherwise be infringing. Non-profit, educational or personal use tips the balance in favour of fair use.
 
