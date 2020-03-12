@@ -140,17 +140,17 @@ Use [nvm](https://github.com/coreybutler/nvm-windows). Also consider to use Ebyr
 
 As of VOICEROID2, the software design is somewhat sophisticated\
 so you only need one executable while voice librariy varies.\
-That's why VOICEROID2 is fully supported. Just making a support for the one executable works fine.\
+That's why VOICEROID2 is fully supported. Just making a support for the one executable works fine.
 
 In contrast, every VOICEROID+ has its own executable, which means I need to write an individual support for each library.\
-And I just f--king ran out of money after buying 4 of them.\
+And I just f--king ran out of money after buying 4 of them.
 
 I'd appreciate your support as in making a pull request, opening an issue or emailing me.
 
 ### Does Ebyroid support concurrency?
 
 Yes. It sticks to asynchronous operation as hard as I can do in native code so as not to break Node's concept.\
-That results in Ebyroid being able to process `^100RPS` when the CPU is fast enough.\
+That results in Ebyroid being able to process `^100RPS` when the CPU is fast enough.
 
 That said, however, some operation like switching voiceroid may acquire the inter-thread lock and take couple hundreds of millis (200ms-400ms practically) solely by itself. Be aware that frequent occurrance of such events may lead to slowen the whole app.
 
@@ -158,11 +158,11 @@ That said, however, some operation like switching voiceroid may acquire the inte
 MIT. See LICENSE.
 
 ## Disclaimer
-Since Ebyroid is merely an ad-hoc, non-profit, open source and free library that interacts with VOICEROID, it doesn't contain any data with commercial value nor has any intent to exploit. Ebyroid only uses information loaded to RAM in human readable format, such like a string, considered to be public, as means of Fair Use of public information.\
+Since Ebyroid is merely an ad-hoc, non-profit, open source and free library that interacts with VOICEROID, it doesn't contain any data with commercial value nor has any intent to exploit. Ebyroid only uses information loaded to RAM in human readable format, such like a string, considered to be public, as means of Fair Use of public information.
 
-I will never be responsible for any consequences in connection with any use of Ebyroid or anyone that uses Ebyroid. I will only be concerned with calls of the US federal courts through Github, Inc. thus any other call and request from other authority or a company shall be ignored and immediately removed.\
+I will never be responsible for any consequences in connection with any use of Ebyroid or anyone that uses Ebyroid. I will only be concerned with calls of the US federal courts through Github, Inc. thus any other call and request from other authority or a company shall be ignored and immediately removed.
 
-FAIR-USE COPYRIGHT DISCLAIMER\
+FAIR-USE COPYRIGHT DISCLAIMER
 
 Copyright Disclaimer Under Section 107 of the Copyright Act 1976, allowance is made for "fair use" for purposes such as criticism, commenting, news reporting, teaching, scholarship, and research. Fair use is a use permitted by copyright statute that might otherwise be infringing. Non-profit, educational or personal use tips the balance in favour of fair use.
 
