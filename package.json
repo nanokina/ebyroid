@@ -28,7 +28,7 @@
   },
   "type": "commonjs",
   "engines": {
-    "node": ">=13.8.0"
+    "node": ">=12.13.1"
   },
   "os": [
     "win32"
@@ -38,20 +38,38 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "bindings": "^1.5.0",
     "cmake-js": "^6.0.0",
-    "commander": "^4.1.1",
     "debug": "^4.1.1",
     "iconv-lite": "^0.5.1",
-    "inquirer": "^7.0.6"
+    "inquirer": "^7.0.6",
+    "npm-run-all": "^4.1.5",
+    "semver": "^7.1.3",
+    "yargs": "^15.3.0"
   },
   "scripts": {
-    "install": "cmake-js rebuild",
-    "test:run": "@powershell -Command $env:DEBUG='*';node ./test/test_run"
+    "install": "run-p build:release",
+    "prestart": "@powershell -Command if(-not(Test-Path ebyroid.conf.json)) { node ./bin/main.js configure }",
+    "start": "@powershell -Command node ./bin/main.js start",
+    "test:run": "@powershell -Command $env:DEBUG='*';node ./test/test_run",
+    "build:debug": "run-s build:clean build:prepare build:debug:compile build:debug:copy",
+    "build:debug:copy": "@powershell -Command Copy-Item ./build/debug/ebyroid.node -Destination dll",
+    "build:debug:compile": "cmake-js -D compile",
+    "build:release": "run-s build:clean build:prepare build:release:compile build:release:copy",
+    "build:release:copy": "@powershell -Command Copy-Item ./build/release/ebyroid.node -Destination dll",
+    "build:release:compile": "cmake-js compile",
+    "build:clean": "run-s build:clean:*",
+    "build:clean:node": "@powershell -Command if(Test-Path ./dll/ebyroid.node) { Remove-Item ./dll/ebyroid.node }",
+    "build:clean:folder": "@powershell -Command if(Test-Path build) { Remove-Item -Recurse build }",
+    "build:prepare": "@powershell -Command if(-not(Test-Path dll)) { New-Item -Path . -Name dll -ItemType directory }",
+    "pack:debug": "run-s build:debug pack:clean pack:pkg pack:copy",
+    "pack:release": "run-s build:release pack:clean pack:pkg pack:copy",
+    "pack:copy": "@powershell -Command Copy-Item ./dll/ebyroid.node -Destination pack",
+    "pack:clean": "@powershell -Command if (Test-Path pack) { Remove-Item -Recurse pack }",
+    "pack:pkg": "pkg --options max-http-header-size=65536 --targets node12-win-x86 --out-path pack ."
   },
   "cmake-js": {
     "runtime": "node",
-    "runtimeVersion": "13.8.0",
+    "runtimeVersion": "12.13.1",
     "arch": "ia32"
   },
   "husky": {
@@ -73,6 +91,7 @@
     "eslint-plugin-prettier": "^3.1.2",
     "husky": "^4.2.3",
     "lint-staged": "^10.0.8",
+    "pkg": "^4.4.4",
     "prettier": "^1.19.1",
     "wavefile": "^11.0.0"
   }

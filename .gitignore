@@ -1,7 +1,10 @@
 ## Managed
 build/
+pack/
+dll/
 .vscode/
 *.wav
+*.conf.json
 
 ## Auto generated
 
