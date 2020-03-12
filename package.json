@@ -7,6 +7,10 @@
     "type": "git",
     "url": "https://github.com/nanokina/ebyroid.git"
   },
+  "bugs": {
+    "url": "https://github.com/nanokina/ebyroid/issues"
+  },
+  "homepage": "https://github.com/nanokina/ebyroid#readme",
   "keywords": [
     "VOICEROID",
     "VOICEROID+",
